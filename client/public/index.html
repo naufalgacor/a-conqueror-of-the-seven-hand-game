@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seven-Hand Game</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Socket.io Client -->
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- Google Fonts: Orbitron + Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ["Orbitron", "sans-serif"],
+            body:    ["Inter", "sans-serif"],
+          },
+          colors: {
+            neon: {
+              cyan:   "#00f5ff",
+              pink:   "#ff0080",
+              gold:   "#ffd700",
+              green:  "#39ff14",
+              purple: "#bf00ff",
+            },
+          },
+          animation: {
+            "pulse-fast":  "pulse 0.6s cubic-bezier(0.4,0,0.6,1) infinite",
+            "glow-ping":   "ping 1s cubic-bezier(0,0,0.2,1) infinite",
+            "slide-up":    "slideUp 0.4s ease-out forwards",
+            "bounce-slow": "bounce 2s infinite",
+            "shake":       "shake 0.4s ease",
+          },
+          keyframes: {
+            slideUp: {
+              "0%":   { opacity: 0, transform: "translateY(20px)" },
+              "100%": { opacity: 1, transform: "translateY(0)" },
+            },
+            shake: {
+              "0%,100%": { transform: "translateX(0)" },
+              "20%":     { transform: "translateX(-6px)" },
+              "40%":     { transform: "translateX(6px)" },
+              "60%":     { transform: "translateX(-4px)" },
+              "80%":     { transform: "translateX(4px)" },
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background: #020817;
+      color: #e2e8f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated starfield background */
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(0,245,255,0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(191,0,255,0.07) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(255,0,128,0.04) 0%, transparent 50%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(12px);
+    }
+
+    .glass-dark {
+      background: rgba(2,8,23,0.8);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(16px);
+    }
+
+    /* Neon border glow effects */
+    .glow-cyan  { box-shadow: 0 0 15px rgba(0,245,255,0.4), 0 0 40px rgba(0,245,255,0.15); }
+    .glow-pink  { box-shadow: 0 0 15px rgba(255,0,128,0.4), 0 0 40px rgba(255,0,128,0.15); }
+    .glow-gold  { box-shadow: 0 0 15px rgba(255,215,0,0.4), 0 0 40px rgba(255,215,0,0.15); }
+    .glow-green { box-shadow: 0 0 15px rgba(57,255,20,0.4), 0 0 40px rgba(57,255,20,0.15); }
+    .glow-purple{ box-shadow: 0 0 15px rgba(191,0,255,0.4), 0 0 40px rgba(191,0,255,0.15); }
+
+    .text-glow-cyan  { text-shadow: 0 0 10px rgba(0,245,255,0.8), 0 0 30px rgba(0,245,255,0.4); }
+    .text-glow-pink  { text-shadow: 0 0 10px rgba(255,0,128,0.8), 0 0 30px rgba(255,0,128,0.4); }
+    .text-glow-gold  { text-shadow: 0 0 10px rgba(255,215,0,0.8), 0 0 30px rgba(255,215,0,0.4); }
+    .text-glow-green { text-shadow: 0 0 10px rgba(57,255,20,0.8), 0 0 30px rgba(57,255,20,0.4); }
+
+    /* Element buttons */
+    .elem-btn {
+      position: relative;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: 1px solid;
+      border-radius: 12px;
+      padding: 12px 8px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 6px;
+      font-family: "Inter", sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      user-select: none;
+    }
+
+    .elem-btn:hover:not(:disabled) {
+      transform: translateY(-4px) scale(1.05);
+    }
+
+    .elem-btn:active:not(:disabled) { transform: translateY(0) scale(0.97); }
+
+    .elem-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .elem-btn.selected {
+      transform: translateY(-6px) scale(1.08);
+      border-width: 2px;
+    }
+
+    /* Element color themes */
+    .elem-Rock     { border-color:#94a3b8; background:rgba(148,163,184,0.1); color:#cbd5e1; }
+    .elem-Rock.selected { background:rgba(148,163,184,0.25); box-shadow:0 0 20px rgba(148,163,184,0.5); }
+    .elem-Fire     { border-color:#f97316; background:rgba(249,115,22,0.1); color:#fed7aa; }
+    .elem-Fire.selected { background:rgba(249,115,22,0.25); box-shadow:0 0 20px rgba(249,115,22,0.5); }
+    .elem-Scissors { border-color:#e2e8f0; background:rgba(226,232,240,0.08); color:#e2e8f0; }
+    .elem-Scissors.selected { background:rgba(226,232,240,0.2); box-shadow:0 0 20px rgba(226,232,240,0.4); }
+    .elem-Sponge   { border-color:#eab308; background:rgba(234,179,8,0.1); color:#fef08a; }
+    .elem-Sponge.selected { background:rgba(234,179,8,0.25); box-shadow:0 0 20px rgba(234,179,8,0.5); }
+    .elem-Paper    { border-color:#38bdf8; background:rgba(56,189,248,0.1); color:#bae6fd; }
+    .elem-Paper.selected { background:rgba(56,189,248,0.25); box-shadow:0 0 20px rgba(56,189,248,0.5); }
+    .elem-Air      { border-color:#a78bfa; background:rgba(167,139,250,0.1); color:#ddd6fe; }
+    .elem-Air.selected { background:rgba(167,139,250,0.25); box-shadow:0 0 20px rgba(167,139,250,0.5); }
+    .elem-Water    { border-color:#06b6d4; background:rgba(6,182,212,0.1); color:#a5f3fc; }
+    .elem-Water.selected { background:rgba(6,182,212,0.25); box-shadow:0 0 20px rgba(6,182,212,0.5); }
+
+    /* Timer ring */
+    .timer-ring {
+      width: 80px; height: 80px;
+      position: relative; display: flex;
+      align-items: center; justify-content: center;
+    }
+
+    .timer-ring svg { position:absolute; top:0; left:0; transform:rotate(-90deg); }
+
+    #timerPath {
+      stroke: #00f5ff;
+      stroke-width: 4;
+      fill: none;
+      stroke-linecap: round;
+      stroke-dasharray: 226;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 1s linear, stroke 0.5s;
+    }
+
+    .chat-msg { animation: slideUp 0.3s ease-out forwards; }
+
+    /* Scrollbar styling */
+    .chat-box::-webkit-scrollbar { width: 4px; }
+    .chat-box::-webkit-scrollbar-track { background: transparent; }
+    .chat-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+    /* Page transitions */
+    .screen { display: none; animation: slideUp 0.4s ease-out; }
+    .screen.active { display: flex; }
+
+    /* Particle effect on win */
+    @keyframes particle {
+      0%   { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-100px) scale(0); opacity: 0; }
+    }
+
+    .particle {
+      position: absolute; width: 8px; height: 8px;
+      border-radius: 50%; animation: particle 1s ease-out forwards;
+    }
+
+    /* Pulsing dot indicator */
+    .live-dot { animation: pulse 1.5s infinite; }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col relative z-10">
+
+<!-- ==================== SCREEN: HOME ==================== -->
+<div id="screen-home" class="screen active flex-col items-center justify-center min-h-screen p-6 gap-8">
+  <div class="text-center">
+    <div class="font-display text-5xl md:text-7xl font-black text-neon-cyan text-glow-cyan tracking-widest mb-2">
+      SEVEN<span class="text-neon-pink text-glow-pink">✋</span>HAND
+    </div>
+    <div class="text-slate-400 font-body text-sm tracking-[0.3em] uppercase">Web Programming Final Project</div>
+  </div>
+
+  <div class="glass rounded-2xl p-8 w-full max-w-md flex flex-col gap-5">
+    <div>
+      <label class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">Nama Pemain</label>
+      <input id="input-username" type="text" maxlength="20" placeholder="Masukkan namamu..."
+        class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan/50 transition-all font-body" />
+    </div>
+
+    <button onclick="createLobby()"
+      class="w-full py-3.5 rounded-xl font-display text-sm tracking-widest bg-neon-cyan text-slate-900 font-bold hover:bg-cyan-300 active:scale-95 transition-all glow-cyan">
+      ⚡ BUAT LOBBY BARU
+    </button>
+
+    <div class="flex items-center gap-3">
+      <div class="flex-1 h-px bg-slate-800"></div>
+      <span class="text-slate-600 text-xs">atau</span>
+      <div class="flex-1 h-px bg-slate-800"></div>
+    </div>
+
+    <div class="flex gap-2">
+      <input id="input-lobby-id" type="text" placeholder="Masukkan Lobby ID..."
+        class="flex-1 bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-neon-pink focus:ring-1 focus:ring-neon-pink/50 transition-all text-sm font-body" />
+      <button onclick="joinLobby()"
+        class="px-5 py-3 rounded-xl font-display text-xs tracking-widest bg-neon-pink text-white font-bold hover:bg-pink-400 active:scale-95 transition-all glow-pink">
+        JOIN
+      </button>
+    </div>
+
+    <div class="mt-2">
+      <button onclick="loadLobbies()"
+        class="w-full py-2.5 rounded-xl border border-slate-700 text-slate-400 text-xs hover:border-slate-500 hover:text-slate-300 transition-all font-body">
+        🔍 Lihat Lobby Tersedia
+      </button>
+      <div id="lobby-list" class="mt-3 flex flex-col gap-2 max-h-48 overflow-y-auto"></div>
+    </div>
+  </div>
+
+  <div id="home-error" class="text-neon-pink text-sm font-body hidden"></div>
+
+  <!-- Element lore -->
+  <div class="glass rounded-2xl p-5 w-full max-w-md">
+    <div class="text-xs text-slate-500 uppercase tracking-widest mb-3 font-semibold">7 Elemen</div>
+    <div class="grid grid-cols-7 gap-1.5 text-center">
+      <div class="text-2xl">🪨</div><div class="text-2xl">🔥</div><div class="text-2xl">✂️</div>
+      <div class="text-2xl">🧽</div><div class="text-2xl">📄</div><div class="text-2xl">💨</div>
+      <div class="text-2xl">💧</div>
+      <div class="text-xs text-slate-500">Rock</div><div class="text-xs text-slate-500">Fire</div>
+      <div class="text-xs text-slate-500">Scissors</div><div class="text-xs text-slate-500">Sponge</div>
+      <div class="text-xs text-slate-500">Paper</div><div class="text-xs text-slate-500">Air</div>
+      <div class="text-xs text-slate-500">Water</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN: LOBBY ==================== -->
+<div id="screen-lobby" class="screen flex-col min-h-screen p-4 gap-4 max-w-5xl mx-auto w-full">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <div class="font-display text-xl text-neon-cyan text-glow-cyan">LOBBY</div>
+      <div id="lobby-id-display" class="text-xs text-slate-500 font-mono"></div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1.5">
+        <div class="w-2 h-2 rounded-full bg-neon-green live-dot"></div>
+        <span class="text-xs text-slate-400" id="lobby-player-count">0/7 Pemain</span>
+      </div>
+      <button onclick="leaveLobby()"
+        class="px-3 py-1.5 rounded-lg border border-red-800 text-red-400 text-xs hover:bg-red-900/30 transition-all">
+        Keluar
+      </button>
+    </div>
+  </div>
+
+  <div class="flex flex-col lg:flex-row gap-4 flex-1">
+
+    <!-- Left: Players + Settings -->
+    <div class="flex flex-col gap-4 lg:w-80 flex-shrink-0">
+
+      <!-- Players List -->
+      <div class="glass rounded-2xl p-4">
+        <div class="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-3">Pemain</div>
+        <div id="players-list" class="flex flex-col gap-2"></div>
+      </div>
+
+      <!-- Leader Settings (only visible to leader) -->
+      <div id="leader-panel" class="glass rounded-2xl p-4 hidden">
+        <div class="text-xs text-neon-gold text-glow-gold uppercase tracking-widest font-semibold mb-3">
+          👑 Pengaturan Leader
+        </div>
+        <div class="mb-3">
+          <label class="text-xs text-slate-400 mb-1.5 block">Mode Permainan</label>
+          <select id="mode-select" onchange="updateGameMode(this.value)"
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neon-cyan transition-all">
+            <option value="points">🏆 Rebutan Poin (7 Ronde)</option>
+            <option value="lives">❤️ Eliminasi Nyawa (3 Nyawa)</option>
+            <option value="cup">🏅 Cup Mode (7P + 1 Bot)</option>
+          </select>
+        </div>
+        <button id="btn-start" onclick="startGame()"
+          class="w-full py-3 rounded-xl font-display text-sm tracking-wider bg-neon-green text-slate-900 font-bold hover:bg-green-300 active:scale-95 transition-all glow-green">
+          ▶ MULAI PERMAINAN
+        </button>
+      </div>
+
+      <!-- Spectator Notice -->
+      <div id="spectator-notice" class="hidden glass rounded-2xl p-4 border border-neon-purple/40">
+        <div class="text-neon-purple text-xs font-semibold uppercase tracking-widest mb-1">👁 Spectator Mode</div>
+        <p class="text-slate-400 text-xs">Kamu sedang menonton pertandingan. Kamu bisa chat tapi tidak bisa memilih elemen.</p>
+        <button onclick="leaveAsSpectator()"
+          class="mt-3 w-full py-2 rounded-lg border border-slate-700 text-slate-400 text-xs hover:text-white hover:border-slate-500 transition-all">
+          Tinggalkan Pertandingan
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Right: Game Board + Chat -->
+    <div class="flex flex-col gap-4 flex-1">
+
+      <!-- Game Board (hidden until game starts) -->
+      <div id="game-board" class="hidden glass rounded-2xl p-5 flex flex-col gap-5">
+
+        <!-- Phase display -->
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-500 uppercase tracking-widest">Status</div>
+            <div id="phase-label" class="font-display text-lg text-neon-cyan text-glow-cyan">Menunggu...</div>
+          </div>
+          <div class="timer-ring">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="36" stroke="rgba(255,255,255,0.05)" stroke-width="4" fill="none"/>
+              <circle id="timerPath" cx="40" cy="40" r="36"/>
+            </svg>
+            <div id="timer-display" class="font-display text-2xl text-neon-cyan text-glow-cyan relative z-10">5</div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs text-slate-500 uppercase tracking-widest">Ronde</div>
+            <div id="round-label" class="font-display text-2xl text-neon-gold text-glow-gold">1</div>
+          </div>
+        </div>
+
+        <!-- Round Result Banner -->
+        <div id="result-banner" class="hidden rounded-xl py-4 text-center transition-all">
+          <div id="result-icon" class="text-4xl mb-1"></div>
+          <div id="result-text" class="font-display text-xl"></div>
+          <div id="result-detail" class="text-sm text-slate-400 mt-1"></div>
+        </div>
+
+        <!-- 7 Element Buttons -->
+        <div>
+          <div class="text-xs text-slate-500 uppercase tracking-widest mb-3 text-center">Pilih Elemen</div>
+          <div class="grid grid-cols-4 md:grid-cols-7 gap-2" id="elements-grid">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+
+        <!-- Players status in-game -->
+        <div>
+          <div class="text-xs text-slate-500 uppercase tracking-widest mb-2">Status Pemain</div>
+          <div id="ingame-players" class="grid grid-cols-2 md:grid-cols-4 gap-2"></div>
+        </div>
+      </div>
+
+      <!-- Waiting screen -->
+      <div id="waiting-screen" class="glass rounded-2xl p-8 flex flex-col items-center gap-4 text-center">
+        <div class="text-4xl animate-bounce-slow">⏳</div>
+        <div class="font-display text-neon-cyan text-glow-cyan text-lg">Menunggu Leader</div>
+        <div class="text-slate-400 text-sm">Leader dapat mengatur mode dan memulai permainan</div>
+        <div id="current-mode-display" class="text-xs text-slate-500 mt-2"></div>
+      </div>
+
+      <!-- Game Over Screen -->
+      <div id="game-over-screen" class="hidden glass rounded-2xl p-8 flex flex-col items-center gap-5 text-center">
+        <div class="text-6xl" id="game-over-emoji">🏆</div>
+        <div class="font-display text-3xl text-neon-gold text-glow-gold" id="game-over-title">PERMAINAN SELESAI</div>
+        <div class="text-slate-300 text-lg" id="game-over-winner"></div>
+        <div id="final-scoreboard" class="w-full max-w-sm"></div>
+        <button onclick="goHome()"
+          class="px-8 py-3 rounded-xl font-display text-sm tracking-widest bg-neon-cyan text-slate-900 font-bold hover:bg-cyan-300 active:scale-95 transition-all glow-cyan mt-2">
+          ← KEMBALI KE MENU
+        </button>
+      </div>
+
+      <!-- Chat Box -->
+      <div class="glass rounded-2xl p-4 flex flex-col flex-1 min-h-64">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-xs text-slate-500 uppercase tracking-widest font-semibold">💬 Lobby Chat</div>
+          <div class="flex items-center gap-1.5">
+            <div class="w-1.5 h-1.5 rounded-full bg-neon-green live-dot"></div>
+            <span class="text-xs text-slate-500">Live</span>
+          </div>
+        </div>
+        <div id="chat-box" class="chat-box flex-1 overflow-y-auto flex flex-col gap-2 mb-3 pr-1 max-h-52"></div>
+        <div class="flex gap-2">
+          <input id="chat-input" type="text" maxlength="300" placeholder="Ketik pesan..."
+            onkeydown="if(event.key==='Enter') sendChat()"
+            class="flex-1 bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-neon-cyan transition-all" />
+          <button onclick="sendChat()"
+            class="px-4 py-2.5 rounded-xl bg-neon-cyan/20 border border-neon-cyan/40 text-neon-cyan text-sm hover:bg-neon-cyan/30 transition-all">
+            ↑
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==================== NOTIFICATION TOAST ==================== -->
+<div id="toast" class="fixed top-5 right-5 z-50 hidden">
+  <div class="glass-dark rounded-xl px-5 py-3 text-sm font-body border border-slate-700 shadow-2xl animate-slide-up">
+    <span id="toast-text"></span>
+  </div>
+</div>
+
+<!-- ==================== GAME OVER PARTICLES ==================== -->
+<div id="particles-container" class="fixed inset-0 pointer-events-none z-40 overflow-hidden"></div>
+
+<!-- ==================== MAIN SCRIPT ==================== -->
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const socket = io();
+
+const state = {
+  userId:  null,
+  matchId: null,
+  username: null,
+  isLeader: false,
+  isSpectator: false,
+  currentPhase: "waiting",   // waiting | selection | resolving | result | finished
+  myChoice: null,
+  timerInterval: null,
+  participants: [],
+};
+
+const ELEMENTS = [
+  { name: "Rock",     emoji: "🪨" },
+  { name: "Fire",     emoji: "🔥" },
+  { name: "Scissors", emoji: "✂️" },
+  { name: "Sponge",   emoji: "🧽" },
+  { name: "Paper",    emoji: "📄" },
+  { name: "Air",      emoji: "💨" },
+  { name: "Water",    emoji: "💧" },
+];
+
+// ============================================================
+// SCREENS
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  const target = document.getElementById(`screen-${id}`);
+  if (target) target.classList.add("active");
+}
+
+// ============================================================
+// TOAST NOTIFICATIONS
+// ============================================================
+let toastTimeout;
+function showToast(msg, duration = 3000) {
+  const t = document.getElementById("toast");
+  document.getElementById("toast-text").textContent = msg;
+  t.classList.remove("hidden");
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.add("hidden"), duration);
+}
+
+// ============================================================
+// HOME SCREEN
+// ============================================================
+async function createLobby() {
+  const username = document.getElementById("input-username").value.trim();
+  if (!username) return showError("Masukkan nama kamu dulu!");
+
+  try {
+    const res = await fetch("/api/v1/lobby", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    });
+    const data = await res.json();
+    if (!res.ok) return showError(data.error || "Gagal membuat lobby");
+
+    state.userId  = data.user_id;
+    state.matchId = data.match_id;
+    state.username = username;
+    state.isLeader = true;
+    enterLobby();
+  } catch (e) {
+    showError("Server tidak dapat dijangkau");
+  }
+}
+
+async function joinLobby(lobbyIdOverride) {
+  const username = document.getElementById("input-username").value.trim();
+  if (!username) return showError("Masukkan nama kamu dulu!");
+
+  const lobbyId = lobbyIdOverride || document.getElementById("input-lobby-id").value.trim();
+  if (!lobbyId) return showError("Masukkan Lobby ID!");
+
+  try {
+    const res = await fetch(`/api/v1/lobby/${lobbyId}/join`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    });
+    const data = await res.json();
+    if (!res.ok) return showError(data.error || "Gagal bergabung");
+
+    state.userId  = data.user_id;
+    state.matchId = data.match_id;
+    state.username = username;
+    state.isLeader = false;
+    enterLobby();
+  } catch (e) {
+    showError("Server tidak dapat dijangkau");
+  }
+}
+
+async function loadLobbies() {
+  try {
+    const res = await fetch("/api/v1/lobbies");
+    const data = await res.json();
+    const listEl = document.getElementById("lobby-list");
+
+    if (!data.lobbies || data.lobbies.length === 0) {
+      listEl.innerHTML = `<div class="text-slate-600 text-xs text-center py-3">Tidak ada lobby terbuka</div>`;
+      return;
+    }
+
+    listEl.innerHTML = data.lobbies.map(l => `
+      <div class="flex items-center justify-between glass rounded-lg px-3 py-2.5">
+        <div>
+          <div class="text-xs font-semibold text-slate-300">${modeLabel(l.mode)}</div>
+          <div class="text-xs text-slate-500 font-mono">${l.id.slice(0,8)}...</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-400">${l.player_count}/7</span>
+          <button onclick="joinLobby('${l.id}')"
+            class="px-3 py-1.5 rounded-lg bg-neon-pink/20 border border-neon-pink/40 text-neon-pink text-xs hover:bg-neon-pink/30 transition-all">
+            Join
+          </button>
+        </div>
+      </div>
+    `).join("");
+  } catch(e) {
+    document.getElementById("lobby-list").innerHTML = `<div class="text-slate-600 text-xs text-center">Gagal memuat</div>`;
+  }
+}
+
+function modeLabel(mode) {
+  return { points: "🏆 Rebutan Poin", lives: "❤️ Eliminasi Nyawa", cup: "🏅 Cup Mode" }[mode] || mode;
+}
+
+function showError(msg) {
+  const el = document.getElementById("home-error");
+  el.textContent = msg;
+  el.classList.remove("hidden");
+  el.classList.add("animate-shake");
+  setTimeout(() => { el.classList.add("hidden"); el.classList.remove("animate-shake"); }, 3000);
+}
+
+// ============================================================
+// ENTER LOBBY
+// ============================================================
+function enterLobby() {
+  showScreen("lobby");
+  document.getElementById("lobby-id-display").textContent = `ID: ${state.matchId}`;
+  buildElementGrid();
+
+  // Socket: join room
+  socket.emit("lobby:join", { match_id: state.matchId, user_id: state.userId });
+}
+
+function leaveLobby() {
+  socket.emit("lobby:leave", { match_id: state.matchId, user_id: state.userId });
+  resetState();
+  showScreen("home");
+}
+
+function leaveAsSpectator() {
+  socket.emit("spectator:decision", { match_id: state.matchId, user_id: state.userId, decision: "leave" });
+  resetState();
+  showScreen("home");
+}
+
+function goHome() {
+  resetState();
+  showScreen("home");
+}
+
+function resetState() {
+  Object.assign(state, {
+    userId: null, matchId: null, username: null,
+    isLeader: false, isSpectator: false,
+    currentPhase: "waiting", myChoice: null,
+  });
+  clearInterval(state.timerInterval);
+  document.getElementById("chat-box").innerHTML = "";
+}
+
+// ============================================================
+// LOBBY UI RENDERING
+// ============================================================
+function renderLobbyState(match) {
+  // Player count
+  const count = match.participants.length;
+  document.getElementById("lobby-player-count").textContent = `${count}/${match.mode === "cup" ? 8 : 7} Pemain`;
+
+  // Mode display
+  document.getElementById("current-mode-display").textContent = `Mode: ${modeLabel(match.mode)}`;
+
+  // Player list (sidebar)
+  const listEl = document.getElementById("players-list");
+  listEl.innerHTML = match.participants.map(p => {
+    const isMe     = p.user_id === state.userId;
+    const isLeader = p.user_id === match.leader_id;
+    const isBot    = p.user_id === "bot";
+
+    return `
+      <div class="flex items-center gap-2.5 rounded-lg px-3 py-2 ${isMe ? "bg-neon-cyan/10 border border-neon-cyan/30" : "bg-slate-900/40"}">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm
+          ${isBot ? "bg-slate-700" : isMe ? "bg-neon-cyan/30" : "bg-slate-800"}">
+          ${isBot ? "🤖" : isLeader ? "👑" : "👤"}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-semibold truncate ${isMe ? "text-neon-cyan" : "text-slate-200"}">
+            ${p.username}${isMe ? " (Kamu)" : ""}
+          </div>
+          <div class="text-xs text-slate-500">
+            ${isLeader ? "Leader" : p.is_spectator ? "Spectator 👁" : "Pemain"}
+            ${p.lives !== undefined ? ` · ❤️ ${p.lives}` : ""}
+            ${p.points !== undefined ? ` · 🏅 ${p.points} poin` : ""}
+          </div>
+        </div>
+        ${p.eliminated ? '<div class="text-xs text-red-500">💀</div>' : ""}
+      </div>
+    `;
+  }).join("");
+
+  // Update my spectator status
+  const me = match.participants.find(p => p.user_id === state.userId);
+  if (me) {
+    state.isSpectator = me.is_spectator;
+    state.isLeader    = match.leader_id === state.userId;
+  }
+
+  // Show/hide panels
+  document.getElementById("leader-panel").classList.toggle("hidden", !state.isLeader);
+  document.getElementById("spectator-notice").classList.toggle("hidden", !state.isSpectator || match.status === "waiting");
+
+  if (state.isLeader) {
+    document.getElementById("mode-select").value = match.mode;
+  }
+
+  // In-game player status grid
+  renderIngamePlayers(match);
+}
+
+function renderIngamePlayers(match) {
+  const el = document.getElementById("ingame-players");
+  el.innerHTML = match.participants.map(p => {
+    const isMe    = p.user_id === state.userId;
+    const hasChosen = p.choice === "chosen";
+    const actualChoice = (match.status === "result" || match.status === "finished") ? p.choice : null;
+    const elemEmoji = actualChoice ? ELEMENTS.find(e => e.name === actualChoice)?.emoji || "?" : null;
+
+    return `
+      <div class="glass rounded-xl p-2.5 text-center ${p.eliminated ? "opacity-40" : ""} ${isMe ? "border border-neon-cyan/30" : ""}">
+        <div class="text-lg mb-0.5">${p.is_spectator && !isMe ? "👁" : hasChosen ? "✅" : elemEmoji || "🤔"}</div>
+        <div class="text-xs font-semibold truncate ${isMe ? "text-neon-cyan" : "text-slate-300"}">${p.username.slice(0,8)}</div>
+        <div class="text-xs text-slate-500">
+          ${match.mode === "lives" || match.mode === "cup" ? `❤️${p.lives}` : `🏅${p.points}`}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// ============================================================
+// LEADER ACTIONS
+// ============================================================
+async function updateGameMode(mode) {
+  if (!state.isLeader) return;
+  await fetch(`/api/v1/lobby/${state.matchId}/settings`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ game_mode: mode, user_id: state.userId }),
+  });
+}
+
+async function startGame() {
+  if (!state.isLeader) return;
+  const res = await fetch(`/api/v1/lobby/${state.matchId}/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_id: state.userId }),
+  });
+  const data = await res.json();
+  if (!res.ok) showToast("❌ " + (data.error || "Gagal memulai"));
+}
+
+// ============================================================
+// ELEMENT BUTTONS
+// ============================================================
+function buildElementGrid() {
+  const grid = document.getElementById("elements-grid");
+  grid.innerHTML = ELEMENTS.map(el => `
+    <button class="elem-btn elem-${el.name}" id="btn-elem-${el.name}"
+      onclick="chooseElement('${el.name}')">
+      <span class="text-2xl">${el.emoji}</span>
+      <span>${el.name}</span>
+    </button>
+  `).join("");
+}
+
+function chooseElement(name) {
+  if (state.currentPhase !== "selection") return;
+  if (state.isSpectator) return;
+  if (state.myChoice) return;
+
+  state.myChoice = name;
+
+  // Visual feedback
+  document.querySelectorAll(".elem-btn").forEach(b => {
+    b.classList.add("opacity-50");
+    b.disabled = true;
+  });
+  const selected = document.getElementById(`btn-elem-${name}`);
+  if (selected) {
+    selected.classList.remove("opacity-50");
+    selected.classList.add("selected");
+    selected.disabled = false;
+  }
+
+  socket.emit("game:choose", {
+    match_id: state.matchId,
+    user_id:  state.userId,
+    element:  name,
+  });
+
+  showToast(`✅ Kamu memilih ${name}!`);
+}
+
+function lockAllElements(locked) {
+  document.querySelectorAll(".elem-btn").forEach(b => {
+    b.disabled = locked;
+    if (locked) b.classList.add("opacity-40");
+    else b.classList.remove("opacity-40", "selected");
+  });
+}
+
+function resetElements() {
+  state.myChoice = null;
+  document.querySelectorAll(".elem-btn").forEach(b => {
+    b.disabled = false;
+    b.classList.remove("opacity-50", "selected", "opacity-40");
+  });
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+const CIRCUMFERENCE = 2 * Math.PI * 36; // 226.19
+
+function startTimer(totalSec) {
+  clearInterval(state.timerInterval);
+  const path  = document.getElementById("timerPath");
+  const disp  = document.getElementById("timer-display");
+  let remaining = totalSec;
+
+  function update() {
+    disp.textContent = remaining;
+    const pct    = remaining / totalSec;
+    path.style.strokeDashoffset = CIRCUMFERENCE * (1 - pct);
+
+    if (remaining <= 2)      path.style.stroke = "#ff0080";
+    else if (remaining <= 3) path.style.stroke = "#ffd700";
+    else                     path.style.stroke = "#00f5ff";
+  }
+
+  update();
+  state.timerInterval = setInterval(() => {
+    remaining--;
+    update();
+    if (remaining <= 0) clearInterval(state.timerInterval);
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(state.timerInterval);
+  const path = document.getElementById("timerPath");
+  path.style.strokeDashoffset = 0;
+  document.getElementById("timer-display").textContent = "";
+}
+
+// ============================================================
+// PHASE UI UPDATES
+// ============================================================
+function setPhaseUI(phase, round) {
+  state.currentPhase = phase;
+  const phaseLabel = document.getElementById("phase-label");
+  const roundLabel = document.getElementById("round-label");
+  if (round) roundLabel.textContent = round;
+
+  const map = {
+    selection:  ["PILIH SEKARANG!", "text-neon-cyan text-glow-cyan"],
+    resolving:  ["RESOLUSI...",      "text-neon-pink text-glow-pink"],
+    result:     ["HASIL RONDE",      "text-neon-gold text-glow-gold"],
+    waiting:    ["Menunggu...",      "text-slate-400"],
+    finished:   ["SELESAI",          "text-neon-green text-glow-green"],
+  };
+
+  const [label, cls] = map[phase] || map["waiting"];
+  phaseLabel.textContent = label;
+  phaseLabel.className   = `font-display text-lg ${cls}`;
+}
+
+function showResultBanner(myResult, choice, winnerNames) {
+  const banner = document.getElementById("result-banner");
+  const icon   = document.getElementById("result-icon");
+  const text   = document.getElementById("result-text");
+  const detail = document.getElementById("result-detail");
+
+  banner.classList.remove("hidden");
+
+  const configs = {
+    win:  { icon: "🏆", text: "MENANG!",       bg: "bg-neon-green/10 border border-neon-green/40", textCls: "text-neon-green text-glow-green" },
+    lose: { icon: "💀", text: "KALAH",         bg: "bg-red-900/20 border border-red-800/40",       textCls: "text-red-400" },
+    draw: { icon: "🤝", text: "SERI",          bg: "bg-neon-gold/10 border border-neon-gold/40",   textCls: "text-neon-gold text-glow-gold" },
+    eliminated: { icon: "👻", text: "TERELIMINASI!", bg: "bg-slate-800/60 border border-slate-700", textCls: "text-slate-300" },
+  };
+
+  const cfg = configs[myResult] || configs["draw"];
+  banner.className = `rounded-xl py-4 text-center transition-all ${cfg.bg}`;
+  icon.textContent = cfg.icon;
+  text.className   = `font-display text-xl ${cfg.textCls}`;
+  text.textContent = cfg.text;
+  detail.textContent = choice ? `Kamu memilih: ${choice}` : "";
+
+  if (myResult === "win") spawnParticles();
+}
+
+function hideResultBanner() {
+  document.getElementById("result-banner").classList.add("hidden");
+}
+
+// ============================================================
+// PARTICLES (WIN EFFECT)
+// ============================================================
+function spawnParticles() {
+  const container = document.getElementById("particles-container");
+  const colors = ["#00f5ff", "#ff0080", "#ffd700", "#39ff14", "#bf00ff"];
+
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement("div");
+    p.className = "particle";
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      top: ${50 + Math.random() * 30}%;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      animation-delay: ${Math.random() * 0.5}s;
+      animation-duration: ${0.8 + Math.random() * 0.8}s;
+    `;
+    container.appendChild(p);
+    setTimeout(() => p.remove(), 1600);
+  }
+}
+
+// ============================================================
+// GAME OVER
+// ============================================================
+function showGameOver(data) {
+  document.getElementById("game-board").classList.add("hidden");
+  document.getElementById("waiting-screen").classList.add("hidden");
+
+  const screen  = document.getElementById("game-over-screen");
+  const title   = document.getElementById("game-over-title");
+  const winnerEl = document.getElementById("game-over-winner");
+
+  screen.classList.remove("hidden");
+
+  const winner = data.participants?.find(p => p.user_id === data.winner_id);
+  const isIWinner = data.winner_id === state.userId;
+
+  document.getElementById("game-over-emoji").textContent = isIWinner ? "🏆" : "🎮";
+  title.textContent = isIWinner ? "KAMU MENANG!" : "PERMAINAN SELESAI";
+  winnerEl.textContent = winner ? `Pemenang: ${winner.username}` : "Hasil Imbang";
+
+  // Final scoreboard
+  const sb = document.getElementById("final-scoreboard");
+  if (data.participants) {
+    const sorted = [...data.participants].sort((a,b) => (b.points - a.points) || (a.lives - b.lives));
+    sb.innerHTML = `
+      <div class="glass rounded-xl overflow-hidden">
+        <table class="w-full text-sm">
+          <thead><tr class="border-b border-slate-800">
+            <th class="text-left px-3 py-2 text-xs text-slate-500">#</th>
+            <th class="text-left px-3 py-2 text-xs text-slate-500">Pemain</th>
+            <th class="px-3 py-2 text-xs text-slate-500">Poin</th>
+            <th class="px-3 py-2 text-xs text-slate-500">Nyawa</th>
+          </tr></thead>
+          <tbody>
+            ${sorted.map((p, i) => `
+              <tr class="border-b border-slate-800/50 ${p.user_id === state.userId ? "bg-neon-cyan/5" : ""}">
+                <td class="px-3 py-2 text-slate-500">${i+1}</td>
+                <td class="px-3 py-2 font-semibold ${p.user_id === state.userId ? "text-neon-cyan" : "text-slate-200"}">${p.username}</td>
+                <td class="px-3 py-2 text-center text-neon-gold">${p.points}</td>
+                <td class="px-3 py-2 text-center text-red-400">${p.lives}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  if (isIWinner) {
+    spawnParticles();
+    setTimeout(spawnParticles, 500);
+    setTimeout(spawnParticles, 1000);
+  }
+}
+
+// ============================================================
+// CHAT
+// ============================================================
+function sendChat() {
+  const input = document.getElementById("chat-input");
+  const msg   = input.value.trim();
+  if (!msg || !state.matchId) return;
+
+  socket.emit("chat:send", { match_id: state.matchId, user_id: state.userId, message: msg });
+  input.value = "";
+}
+
+function appendChat(data) {
+  const box  = document.getElementById("chat-box");
+  const isMe = data.user_id === state.userId;
+  const isSpect = data.is_spectator;
+
+  const div = document.createElement("div");
+  div.className = `chat-msg flex ${isMe ? "justify-end" : "justify-start"}`;
+  div.innerHTML = `
+    <div class="max-w-[75%] ${isMe
+      ? "bg-neon-cyan/15 border border-neon-cyan/25 rounded-2xl rounded-tr-sm"
+      : "bg-slate-800/60 border border-slate-700/50 rounded-2xl rounded-tl-sm"
+    } px-3 py-2">
+      ${!isMe ? `<div class="text-xs font-semibold mb-0.5 ${isSpect ? "text-neon-purple" : "text-slate-400"}">${data.username}${isSpect ? " 👁" : ""}</div>` : ""}
+      <div class="text-sm text-slate-200 leading-relaxed">${escapeHtml(data.message)}</div>
+      <div class="text-xs text-slate-600 mt-0.5 ${isMe ? "text-right" : ""}">${formatTime(data.created_at)}</div>
+    </div>
+  `;
+
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function formatTime(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+}
+
+function appendSystemMsg(msg) {
+  const box = document.getElementById("chat-box");
+  const div = document.createElement("div");
+  div.className = "text-center text-xs text-slate-600 py-1 chat-msg";
+  div.textContent = msg;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+// ============================================================
+// SOCKET.IO EVENT HANDLERS
+// ============================================================
+
+socket.on("connect", () => console.log("[Socket] Connected:", socket.id));
+
+socket.on("lobby:joined", (data) => {
+  console.log("[Lobby] Joined:", data);
+  state.isLeader    = data.is_leader;
+  state.isSpectator = data.participant.is_spectator;
+  appendSystemMsg(`👋 Kamu bergabung sebagai ${data.is_leader ? "Leader" : "Pemain"}`);
+});
+
+socket.on("lobby:state", (match) => {
+  renderLobbyState(match);
+
+  // Sync mode select
+  if (state.isLeader) {
+    document.getElementById("mode-select").value = match.mode;
+  }
+});
+
+socket.on("lobby:leader:changed", (data) => {
+  showToast(`👑 ${data.new_leader_username} sekarang menjadi Leader!`);
+  appendSystemMsg(`👑 Leader baru: ${data.new_leader_username}`);
+});
+
+socket.on("lobby:you:are:leader", () => {
+  state.isLeader = true;
+  showToast("👑 Kamu sekarang menjadi Leader!");
+  document.getElementById("leader-panel").classList.remove("hidden");
+});
+
+socket.on("lobby:left", () => {
+  showScreen("home");
+});
+
+socket.on("chat:message", (data) => {
+  appendChat(data);
+});
+
+socket.on("game:started", (data) => {
+  showToast(`🚀 Permainan dimulai! Mode: ${modeLabel(data.mode)}`);
+  document.getElementById("waiting-screen").classList.add("hidden");
+  document.getElementById("game-over-screen").classList.add("hidden");
+  document.getElementById("game-board").classList.remove("hidden");
+  document.getElementById("leader-panel").classList.add("hidden");
+  appendSystemMsg("--- Permainan dimulai! ---");
+});
+
+socket.on("game:phase:selection", (data) => {
+  state.currentPhase = "selection";
+  hideResultBanner();
+  resetElements();
+  setPhaseUI("selection", data.round);
+  startTimer(5);
+
+  if (state.isSpectator) {
+    lockAllElements(true);
+    appendSystemMsg(`👁 Ronde ${data.round} - Kamu spectator, tidak bisa memilih`);
+  } else {
+    appendSystemMsg(`⚔️ Ronde ${data.round} - Pilih elemenmu! (5 detik)`);
+  }
+});
+
+socket.on("game:timer:tick", (data) => {
+  // Timer is managed client-side for smoothness; server ticks act as sync
+  document.getElementById("timer-display").textContent = data.remaining;
+});
+
+socket.on("game:phase:resolving", () => {
+  state.currentPhase = "resolving";
+  setPhaseUI("resolving");
+  lockAllElements(true);
+  stopTimer();
+
+  document.getElementById("timer-display").textContent = "⚡";
+  appendSystemMsg("⚡ Mengacak hasil...");
+});
+
+socket.on("game:player:chosen", (data) => {
+  // Another player has chosen (without revealing element)
+  const participant = document.querySelector(`[data-uid="${data.user_id}"]`);
+  // Update in-game grid indirectly via lobby:state
+});
+
+socket.on("game:choice:confirmed", (data) => {
+  showToast(`✅ Pilihan dikonfirmasi: ${data.element}`);
+});
+
+socket.on("game:phase:result", (data) => {
+  state.currentPhase = "result";
+  setPhaseUI("result", data.round);
+  lockAllElements(true);
+
+  if (data.game_over) {
+    showGameOver(data);
+    return;
+  }
+
+  // Show my result
+  const myResult = data.results[state.userId];
+  if (myResult) {
+    showResultBanner(myResult.result, myResult.choice);
+  }
+
+  // Announce in chat
+  const summary = Object.values(data.results)
+    .map(r => `${r.username}: ${r.choice || "❌"} → ${r.result}`)
+    .join(" | ");
+  appendSystemMsg(`📊 ${summary}`);
+
+  if (data.draw) appendSystemMsg("🤝 Ronde ini SERI!");
+});
+
+socket.on("game:eliminated", (data) => {
+  state.isSpectator = true;
+  showToast("💀 " + data.message, 5000);
+  document.getElementById("spectator-notice").classList.remove("hidden");
+  appendSystemMsg("💀 Kamu tereliminasi! Sekarang dalam mode Spectator.");
+});
+
+socket.on("error", (data) => {
+  showToast("❌ " + data.message);
+});
+</script>
+</body>
+</html>
