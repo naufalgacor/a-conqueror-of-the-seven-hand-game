@@ -51,7 +51,7 @@ const WINS = {
 };
 
 // Timing (ms)
-const PHASE_SELECTION_MS  = 5000;
+const PHASE_SELECTION_MS  = 15000;
 const PHASE_RESOLUTION_MS = 2000;
 
 /**
@@ -61,7 +61,7 @@ const PHASE_RESOLUTION_MS = 2000;
  *   startingLives: HP awal (mode lives & cup)
  */
 const MODE_CONFIG = {
-  points: { maxPlayers: 2, targetScore: 2, startingLives: 0  }, // Best-of-3
+  points: { maxPlayers: 2, targetScore: 4, startingLives: 0  }, // Best-of-3
   lives:  { maxPlayers: 2, targetScore: 0, startingLives: 3  }, // 3 HP eliminasi
   cup:    { maxPlayers: 7, targetScore: 0, startingLives: 3  }, // 7 slot + bot(s)
 };
@@ -176,6 +176,18 @@ function getActiveBots(match) {
   );
 }
 
+function highlightSelectedElement(element) {
+  // Hapus semua border pilihan sebelumnya
+  document.querySelectorAll('.element-card').forEach(card => {
+    card.classList.remove('border-neon-cyan', 'ring-2', 'ring-neon-cyan');
+  });
+  
+  // Tambahkan border ke elemen yang baru dipilih
+  const activeCard = document.querySelector(`[data-element="${element}"]`);
+  if (activeCard) {
+    activeCard.classList.add('border-neon-cyan', 'ring-2', 'ring-neon-cyan');
+  }
+}
 /**
  * assignBotChoices(match)
  *
@@ -454,7 +466,7 @@ function resolveRound(matchId) {
  * Mode cup    : loser -1 HP → is_spectator jika HP 0
  */
 function applyRoundOutcome(match, winners, losers, draw) {
-  if (!draw && match.mode === "points") {
+  if (!draw ) {
     winners.forEach((uid) => {
       const p = match.participants.get(uid);
       if (p && !p.eliminated) p.points++;
@@ -536,17 +548,25 @@ function checkGameOver(match) {
 // ═══════════════════════════════════════════════════════════════
 
 // GET /api/v1/lobbies
+// Cari bagian API lobbies di server.js
 app.get("/api/v1/lobbies", (req, res) => {
   const open = Array.from(matches.values())
     .filter((m) => m.status === "waiting")
-    .map((m) => ({
-      id:           m.id,
-      mode:         m.mode,
-      status:       m.status,
-      leader_id:    m.leader_id,
-      player_count: getParticipantArray(m).filter((p) => !p.is_bot).length,
-      max_players:  MODE_CONFIG[m.mode]?.maxPlayers || 8,
-    }));
+    .map((m) => {
+      // PENTING: Ambil data objek leader dari Map participants menggunakan leader_id
+      const leader = m.participants.get(m.leader_id);
+      
+      return {
+        id:           m.id,
+        mode:         m.mode,
+        status:       m.status,
+        leader_id:    m.leader_id,
+        // Kirim username leader ke client, jika tidak ketemu tulis "Unknown"
+        leader_name:  leader ? leader.username : "Unknown", 
+        player_count: getParticipantArray(m).filter((p) => !p.is_bot).length,
+        max_players:  MODE_CONFIG[m.mode]?.maxPlayers || 8,
+      };
+    });
   res.json({ lobbies: open });
 });
 
@@ -698,26 +718,35 @@ io.on("connection", (socket) => {
   });
 
   socket.on("game:choose", ({ match_id, user_id, element }) => {
-    const match = getMatch(match_id);
-    if (!match || match.status !== "selection")
-      return socket.emit("error", { message: "Bukan fase pemilihan" });
-    if (!ELEMENTS.includes(element))
-      return socket.emit("error", { message: "Elemen tidak valid" });
+  const match = getMatch(match_id);
+  if (!match || match.status !== "selection") return;
 
-    const p = match.participants.get(user_id);
-    if (!p || p.is_spectator || p.eliminated || p.is_bot || p.choice) return;
+  const p = match.participants.get(user_id);
+  // HAPUS p.choice dari pengecekan di bawah ini
+  if (!p || p.is_spectator || p.eliminated || p.is_bot) return;
 
-    p.choice = element;
-    socket.emit("game:choice:confirmed", { element });
-    socket.to(match_id).emit("game:player:chosen", { user_id, username: p.username });
+  // Timpa pilihan lama dengan yang baru
+  p.choice = element;
 
-    // Early resolve jika semua manusia aktif sudah memilih
-    const allChosen = getActivePlayers(match).every((hp) => hp.choice);
-    if (allChosen) {
-      if (match.roundTimer) clearTimeout(match.roundTimer);
-      resolveRound(match_id);
-    }
+  // Kirim konfirmasi ke user tersebut
+  socket.emit("game:choice:confirmed", { element });
+
+  // Beritahu pemain lain (opsional: agar UI mereka update)
+  io.to(match_id).emit("game:player:chosen", { 
+    user_id, 
+    username: p.username,
+    changed: true // Tambahkan flag ini jika ingin menampilkan pesan "mengubah pilihan"
   });
+
+  // JANGAN gunakan auto-resolve (allChosen) jika ingin memberi kesempatan ganti
+  // sampai waktu habis, atau biarkan saja jika ingin langsung lanjut saat semua siap.
+  // const allChosen = getActivePlayers(match).every((hp) => hp.choice);
+  // if (allChosen) {
+  //   // Memberikan delay kecil agar pemain tidak kaget saat pindah fase
+  //   if (match.roundTimer) clearTimeout(match.roundTimer);
+  //   setTimeout(() => { resolveRound(match_id); }, 800);
+  // }
+});
 
   socket.on("spectator:decision", ({ match_id, user_id, decision }) => {
     const match = getMatch(match_id);
