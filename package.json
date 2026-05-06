@@ -2,9 +2,10 @@
   "name": "seven-hand-game",
   "version": "1.0.0",
   "description": "> Proyek Akhir Semester — Pemrograman Web  \r > Stack: **Node.js + Express + Socket.io + Tailwind CSS**",
-  "main": "index.js",
+  "main": "server/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server/server.js"
   },
   "repository": {
     "type": "git",
