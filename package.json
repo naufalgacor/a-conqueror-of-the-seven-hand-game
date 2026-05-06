@@ -1,24 +1,30 @@
 {
   "name": "seven-hand-game",
   "version": "1.0.0",
-  "description": "Seven-Hand Game — Rock, Fire, Scissors, Sponge, Paper, Air, Water multiplayer game",
-  "main": "server/server.js",
+  "description": "> Proyek Akhir Semester — Pemrograman Web  \r > Stack: **Node.js + Express + Socket.io + Tailwind CSS**",
+  "main": "index.js",
   "scripts": {
-    "start": "node server/server.js",
-    "dev": "nodemon server/server.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "engines": {
-    "node": ">=18.0.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/naufalgacor/seven-hand-game.git"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/naufalgacor/seven-hand-game/issues"
+  },
+  "homepage": "https://github.com/naufalgacor/seven-hand-game#readme",
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "socket.io": "^4.7.5",
-    "uuid": "^9.0.1"
+    "cores": "^0.8.0",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3",
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
-  },
-  "keywords": ["game", "socket.io", "realtime", "multiplayer"],
-  "license": "MIT"
+    "nodemon": "^3.1.14"
+  }
 }
