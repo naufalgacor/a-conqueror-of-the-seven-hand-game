@@ -61,9 +61,13 @@ const PHASE_RESOLUTION_MS = 2000;
  *   startingLives: HP awal (mode lives & cup)
  */
 const MODE_CONFIG = {
-  points: { maxPlayers: 2, targetScore: 4, startingLives: 0  }, // Best-of-3
+  points: { maxPlayers: 2, targetScore: 4, startingLives: 0  }, // Best-of-7 (butuh 4 poin)
   lives:  { maxPlayers: 2, targetScore: 0, startingLives: 3  }, // 3 HP eliminasi
-  cup:    { maxPlayers: 7, targetScore: 0, startingLives: 3  }, // 7 slot + bot(s)
+  cup:    { maxPlayers: 7, targetScore: 1, startingLives: 1  }, // Turnamen eliminasi 7 slot
+};
+
+const TITLES = {
+  CHAMPION: "The Apex Sovereign",
 };
 
 // Pool nama bot — dipakai berurutan
@@ -136,7 +140,7 @@ function makeParticipant({ userId, username, joinOrder, isBot = false, mode }) {
 function fillWithBots(match) {
   const cfg        = MODE_CONFIG[match.mode];
   // Total slot yang harus terisi (manusia + bot)
-  const totalTarget = match.mode === "cup" ? 8 : cfg.maxPlayers;
+  const totalTarget = match.mode === "cup" ? 7 : cfg.maxPlayers;
   const current    = getParticipantArray(match).length;
   const slotsNeeded = Math.max(0, totalTarget - current);
 
@@ -328,7 +332,12 @@ function startGame(matchId) {
   match.status = "playing";
   match.round  = 0;
 
-  fillWithBots(match); // ← CORE: isi slot kosong
+  if (match.mode === "cup") {
+    fillWithBots(match);
+    generateCupBracket(match);
+  } else {
+    fillWithBots(match);
+  } // ← CORE: isi slot kosong
 
   const botList = getParticipantArray(match)
     .filter((p) => p.is_bot)
@@ -561,6 +570,7 @@ app.get("/api/v1/lobbies", (req, res) => {
         mode:         m.mode,
         status:       m.status,
         leader_id:    m.leader_id,
+      leader_name:  m.participants.get(m.leader_id) ? m.participants.get(m.leader_id).username : "Unknown",
         // Kirim username leader ke client, jika tidak ketemu tulis "Unknown"
         leader_name:  leader ? leader.username : "Unknown", 
         player_count: getParticipantArray(m).filter((p) => !p.is_bot).length,
@@ -718,18 +728,19 @@ io.on("connection", (socket) => {
   });
 
   socket.on("game:choose", ({ match_id, user_id, element }) => {
-  const match = getMatch(match_id);
-  if (!match || match.status !== "selection") return;
+    const match = getMatch(match_id);
+    if (!match || match.status !== "selection")
+      return socket.emit("error", { message: "Bukan fase pemilihan" });
+    if (!ELEMENTS.includes(element))
+      return socket.emit("error", { message: "Elemen tidak valid" });
 
-  const p = match.participants.get(user_id);
-  // HAPUS p.choice dari pengecekan di bawah ini
-  if (!p || p.is_spectator || p.eliminated || p.is_bot) return;
+    const p = match.participants.get(user_id);
+    if (!p || p.is_spectator || p.eliminated || p.is_bot) return;
 
-  // Timpa pilihan lama dengan yang baru
-  p.choice = element;
-
-  // Kirim konfirmasi ke user tersebut
-  socket.emit("game:choice:confirmed", { element });
+    p.choice = element; // Timpa pilihan lama
+    socket.emit("game:choice:confirmed", { element });
+    io.to(match_id).emit("game:player:chosen", { user_id, username: p.username });
+  });
 
   // Beritahu pemain lain (opsional: agar UI mereka update)
   io.to(match_id).emit("game:player:chosen", { 
@@ -746,7 +757,6 @@ io.on("connection", (socket) => {
   //   if (match.roundTimer) clearTimeout(match.roundTimer);
   //   setTimeout(() => { resolveRound(match_id); }, 800);
   // }
-});
 
   socket.on("spectator:decision", ({ match_id, user_id, decision }) => {
     const match = getMatch(match_id);
@@ -841,6 +851,29 @@ io.on("connection", (socket) => {
     socket.emit("lobby:left");
     broadcastLobbyState(match_id);
   });
+
+  socket.on("lobby:restart", ({ match_id, user_id }) => {
+    const match = matches.get(match_id);
+    if (!match || match.leader_id !== user_id) return;
+
+    match.status = "waiting";
+    match.winner_id = null;
+    match.round = 0;
+    match.cup_bracket = null;
+    if (match.roundTimer) clearTimeout(match.roundTimer);
+
+    match.participants.forEach((p) => {
+      const cfg = MODE_CONFIG[match.mode] || MODE_CONFIG.points;
+      p.points = 0;
+      p.lives = cfg.startingLives;
+      p.choice = null;
+      p.eliminated = false;
+      p.is_spectator = false;
+    });
+
+    io.to(match_id).emit("lobby:restarted");
+    broadcastLobbyState(match_id);
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════
@@ -857,3 +890,19 @@ server.listen(PORT, () => {
   });
   console.log();
 });
+
+function generateCupBracket(match) {
+  const participants = getParticipantArray(match);
+  const shuffled = participants.sort(() => Math.random() - 0.5);
+  
+  match.cup_bracket = {
+    round: 1,
+    matches: [
+      { p1: shuffled[0]?.user_id, p2: shuffled[1]?.user_id, winner: null },
+      { p1: shuffled[2]?.user_id, p2: shuffled[3]?.user_id, winner: null },
+      { p1: shuffled[4]?.user_id, p2: shuffled[5]?.user_id, winner: null },
+    ],
+    bye: shuffled[6]?.user_id,
+    winners: []
+  };
+}

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Seven-Hand Game</title>
+  <title>A Conqueror of The Seven Hand Game</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/socket.io/socket.io.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -656,7 +656,7 @@ function renderPlayerList(match) {
         </div>
         <div class="flex-1 min-w-0">
           <div class="text-sm font-semibold truncate ${isMe ? "text-neon-cyan" : isBot ? "text-slate-500" : "text-slate-200"}">
-            ${p.username}${isMe ? " (Kamu)" : ""}${isBot ? " 🤖" : ""}
+            ${titleHtml}${p.username}${isMe ? " (Kamu)" : ""}${isBot ? " 🤖" : ""}
           </div>
           <div class="text-xs text-slate-600">
             ${isLeader && !isBot ? "👑 Leader" : p.is_spectator ? "👁 Spectator" : isBot ? "Auto" : "Pemain"}
@@ -671,6 +671,7 @@ function renderPlayerList(match) {
 function renderIngamePlayers(match) {
   document.getElementById("ingame-players").innerHTML = match.participants.map(p => {
     const isMe      = p.user_id === state.userId;
+    const titleHtml = p.custom_title ? `<div class="text-[9px] text-neon-gold font-bold uppercase tracking-widest">${p.custom_title}</div>` : "";
     const hasChosen = p.choice === "chosen";
     const revChoice = (match.status === "result" || match.status === "finished") ? p.choice : null;
     const elemEmoji = revChoice ? ELEMENTS.find(e => e.name === revChoice)?.emoji || "?" : null;
@@ -684,6 +685,7 @@ function renderIngamePlayers(match) {
           ${p.is_spectator ? "👁" : hasChosen ? "✅" : elemEmoji || (p.is_bot ? "🤖" : "🤔")}
         </div>
         <div class="text-xs font-semibold truncate ${isMe ? "text-neon-cyan" : p.is_bot ? "text-slate-500" : "text-slate-300"}">
+          ${titleHtml}
           ${p.username.slice(0,9)}
         </div>
         <div class="text-xs text-slate-500">
@@ -1021,7 +1023,15 @@ socket.on("game:player:chosen", (data) => {
 });
 
 socket.on("game:choice:confirmed", (data) => {
-  showToast(`✅ Pilihan dikonfirmasi: ${data.element}`);
+  // Highlight
+  document.querySelectorAll('.elem-btn').forEach(card => {
+    card.classList.remove('selected', 'ring-2', 'ring-neon-cyan', 'scale-105');
+  });
+  const activeCard = document.getElementById(`btn-elem-${data.element}`);
+  if (activeCard) {
+    activeCard.classList.remove("opacity-40");
+    activeCard.classList.add('selected', 'ring-2', 'ring-neon-cyan', 'scale-105');
+  }
 });
 
 socket.on("game:phase:result", (data) => {
