@@ -8,7 +8,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // TOAST
+  // TOAST & ERROR
   // ─────────────────────────────────────────────────────────────
   let toastTimer;
   function showToast(msg, ms = 3000) {
@@ -19,9 +19,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     toastTimer = setTimeout(() => t.classList.add("hidden"), ms);
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // HOME ERROR
-  // ─────────────────────────────────────────────────────────────
   function showError(msg) {
     const el = document.getElementById("home-error");
     el.textContent = msg;
@@ -50,7 +47,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
         icon.textContent = "✅";
         label.textContent = "Tersalin!";
         showToast("✅ Lobby ID berhasil disalin!");
-
         setTimeout(() => {
           btn.classList.remove("copy-btn-success");
           icon.textContent = "📋";
@@ -58,14 +54,12 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
         }, 2500);
       })
       .catch(() => {
-        // Fallback jika clipboard API tidak tersedia (HTTP)
         const tmp = document.createElement("input");
         tmp.value = state.matchId;
         document.body.appendChild(tmp);
         tmp.select();
         document.execCommand("copy");
         document.body.removeChild(tmp);
-
         btn.classList.add("copy-btn-success");
         icon.textContent = "✅";
         label.textContent = "Tersalin!";
@@ -82,41 +76,48 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
   // LOBBY UI
   // ─────────────────────────────────────────────────────────────
   function renderLobbyState(match) {
-    // Player count (hanya manusia)
     const humanCount = match.participants.filter((p) => !p.is_bot).length;
     const botCount = match.participants.filter((p) => p.is_bot).length;
     const maxP = match.mode_config?.maxPlayers || "?";
     document.getElementById("lobby-player-count").textContent =
       `${humanCount}/${maxP} Pemain${botCount > 0 ? ` + ${botCount} Bot` : ""}`;
 
-    // Mode display
     const modeInfo = MODE_INFO[match.mode] || "";
     document.getElementById("current-mode-display").textContent =
       `${MODE_LABELS[match.mode] || match.mode} — ${modeInfo}`;
 
-    // Update my state based on server match data
     const me = match.participants.find((p) => p.user_id === state.userId);
     if (me) {
       state.isSpectator = me.is_spectator;
       state.isLeader = match.leader_id === state.userId;
     }
 
-    // Leader panel
-    document.getElementById("leader-panel").classList.toggle("hidden", !state.isLeader);
+    const gameRunning = match.status !== "waiting" && match.status !== "finished";
+    
+    // Tampilkan Leader Panel hanya jika dia adalah leader DAN game sedang waiting
+    document.getElementById("leader-panel").classList.toggle("hidden", !(state.isLeader && match.status === "waiting"));
+    
     if (state.isLeader) {
       document.getElementById("mode-select").value = match.mode;
       document.getElementById("mode-info-badge").textContent = modeInfo;
     }
 
-    // Spectator notice (hanya saat game berjalan)
-    const gameRunning = match.status !== "waiting";
-    document.getElementById("spectator-notice").classList.toggle(
-      "hidden",
-      !(state.isSpectator && gameRunning)
-    );
+    // Tampilkan tombol Restart khusus leader saat selesai
+    document.getElementById("btn-restart-game").classList.toggle("hidden", !(state.isLeader && match.status === "finished"));
+
+    document.getElementById("spectator-notice").classList.toggle("hidden", !(state.isSpectator && gameRunning));
 
     renderPlayerList(match);
-    renderIngamePlayers(match);
+    
+    // Logika UI untuk Mode Cup vs Normal
+    const isCupModeActive = match.mode === "cup" && match.cup_bracket && match.status !== "waiting" && match.status !== "finished";
+    document.getElementById("cup-bracket-container").classList.toggle("hidden", !isCupModeActive);
+
+    if (isCupModeActive) {
+         renderCupPlayers(match);
+    } else {
+         renderIngamePlayers(match);
+    }
   }
 
   function renderPlayerList(match) {
@@ -155,11 +156,9 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     document.getElementById("ingame-players").innerHTML = match.participants
       .map((p) => {
         const isMe = p.user_id === state.userId;
-        const titleHtml = p.custom_title
-          ? `<div class="text-[9px] text-neon-gold font-bold uppercase tracking-widest">${p.custom_title}</div>`
-          : "";
-        const hasChosen = p.choice === "chosen";
-        const revChoice = match.status === "result" || match.status === "finished" ? p.choice : null;
+        const titleHtml = p.custom_title ? `<div class="text-[9px] text-neon-gold font-bold uppercase tracking-widest">${p.custom_title}</div>` : "";
+        const hasChosen = p.choice && p.choice !== "";
+        const revChoice = (match.status === "result" || match.status === "finished") ? p.choice : null;
         const elemEmoji = revChoice ? ELEMENTS.find((e) => e.name === revChoice)?.emoji || "?" : null;
 
         return `
@@ -181,6 +180,71 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
       })
       .join("");
   }
+
+  function renderCupPlayers(match) {
+      const bracket = match.cup_bracket;
+      if (!bracket) {
+          renderIngamePlayers(match); // fallback
+          return;
+      }
+
+      // 1. Merender Visual Daftar Bagan Turnamen
+      const bracketHtml = bracket.slots.map(userId => {
+          const p = match.participants.find(x => x.user_id === userId);
+          if (!p) return '';
+
+          let hearts = "❤️".repeat(Math.max(0, p.lives)) + "💀".repeat(Math.max(0, 3 - p.lives));
+          if (p.lives <= 0) hearts = "💀💀💀";
+
+          let status = "<span class='text-slate-500 text-[10px]'>(Menunggu)</span>";
+          if (p.eliminated) {
+               status = "<span class='text-red-500 text-[10px]'>(Gugur)</span>";
+          } else if (match.winner_id === p.user_id) {
+               status = "<span class='text-neon-gold text-[10px]'>(Juara 🏆)</span>";
+          } else if (bracket.active_p1 === p.user_id || bracket.active_p2 === p.user_id) {
+               status = "<span class='text-neon-cyan animate-pulse font-bold text-[10px]'>(Sedang Duel ⚔️)</span>";
+          } else if (bracket.round === 1 && p.user_id === bracket.schedule[3].p1 && !bracket.schedule[5].w) {
+               // Masih menunggu lawan yang naik dari Putaran 1
+               status = "<span class='text-slate-400 text-[10px]'>(BYE)</span>";
+          }
+
+          return `
+          <div class="flex items-center justify-between bg-slate-800/40 border border-slate-700/50 rounded-lg p-2 ${p.eliminated ? 'opacity-40' : ''}">
+              <div class="font-semibold text-xs ${p.user_id === state.userId ? 'text-neon-cyan' : 'text-slate-300'}">
+                  ${p.username} ${p.is_bot ? '🤖' : ''}
+              </div>
+              <div class="flex items-center gap-3">
+                  <div class="text-[10px] tracking-[0.2em]">${hearts}</div>
+                  <div class="w-20 text-right">${status}</div>
+              </div>
+          </div>`;
+      });
+      document.getElementById("cup-bracket-list").innerHTML = bracketHtml.join("");
+
+      // 2. Merender 2 Pemain yang Sedang Duel (Kotak Besar di Bawah)
+      const activePlayers = [
+           match.participants.find(p => p.user_id === bracket.active_p1),
+           match.participants.find(p => p.user_id === bracket.active_p2)
+      ].filter(Boolean);
+      
+      document.getElementById("ingame-players").innerHTML = activePlayers.map((p) => {
+          const isMe = p.user_id === state.userId;
+          const titleHtml = p.custom_title ? `<div class="text-[9px] text-neon-gold font-bold uppercase tracking-widest">${p.custom_title}</div>` : "";
+          const hasChosen = p.choice && p.choice !== "";
+          const revChoice = (match.status === "result" || match.status === "finished") ? p.choice : null;
+          const elemEmoji = revChoice ? ELEMENTS.find((e) => e.name === revChoice)?.emoji || "?" : null;
+
+          return `
+        <div class="glass rounded-xl p-4 text-center transition-all ${isMe ? "border border-neon-cyan/40" : ""} ${p.is_bot ? "border border-slate-700/60" : ""}">
+          <div class="text-3xl mb-2">${hasChosen ? "✅" : elemEmoji || (p.is_bot ? "🤖" : "🤔")}</div>
+          <div class="text-sm font-bold truncate ${isMe ? "text-neon-cyan" : p.is_bot ? "text-slate-500" : "text-white"}">
+            ${titleHtml}${p.username.slice(0, 10)}
+          </div>
+          <div class="text-xs text-slate-400 mt-1">❤️ ${p.lives}</div>
+        </div>`;
+      }).join("");
+  }
+
 
   // ─────────────────────────────────────────────────────────────
   // ELEMENT BUTTONS
@@ -259,7 +323,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
   // ─────────────────────────────────────────────────────────────
   // PHASE UI
   // ─────────────────────────────────────────────────────────────
-  function setPhaseUI(phase, round) {
+  function setPhaseUI(phase, labelOverride) {
     state.currentPhase = phase;
     const map = {
       selection: ["PILIH SEKARANG!", "text-neon-cyan text-glow-cyan"],
@@ -272,30 +336,16 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     const el = document.getElementById("phase-label");
     el.textContent = label;
     el.className = `font-display text-lg ${cls}`;
-    if (round) document.getElementById("round-label").textContent = round;
+    if (labelOverride) document.getElementById("round-label").innerHTML = labelOverride;
   }
 
   function showResultBanner(result, choice) {
     const banner = document.getElementById("result-banner");
     const cfgs = {
-      win: {
-        icon: "🏆",
-        text: "MENANG!",
-        bg: "bg-neon-green/10 border border-neon-green/40",
-        tc: "text-neon-green text-glow-green",
-      },
-      lose: {
-        icon: "💀",
-        text: "KALAH",
-        bg: "bg-red-900/20 border border-red-800/40",
-        tc: "text-red-400",
-      },
-      draw: {
-        icon: "🤝",
-        text: "SERI",
-        bg: "bg-neon-gold/10 border border-neon-gold/40",
-        tc: "text-neon-gold text-glow-gold",
-      },
+      win: { icon: "🏆", text: "MENANG!", bg: "bg-neon-green/10 border border-neon-green/40", tc: "text-neon-green text-glow-green" },
+      lose: { icon: "💀", text: "KALAH", bg: "bg-red-900/20 border border-red-800/40", tc: "text-red-400" },
+      draw: { icon: "🤝", text: "SERI", bg: "bg-neon-gold/10 border border-neon-gold/40", tc: "text-neon-gold text-glow-gold" },
+      spectate: { icon: "👁", text: "MENONTON", bg: "bg-slate-800/40 border border-slate-600", tc: "text-slate-400"}
     };
     const cfg = cfgs[result] || cfgs.draw;
 
@@ -308,7 +358,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     textEl.className = `font-display text-xl ${cfg.tc}`;
     textEl.textContent = cfg.text;
 
-    document.getElementById("result-detail").textContent = choice ? `Kamu memilih: ${choice}` : "";
+    document.getElementById("result-detail").textContent = choice ? `Memilih: ${choice}` : "";
 
     if (result === "win") spawnParticles();
   }
@@ -335,9 +385,10 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
       : "Hasil Imbang";
 
     if (data.participants) {
-      const sorted = [...data.participants].sort(
-        (a, b) => b.points - a.points || b.lives - a.lives
-      );
+      const sorted = [...data.participants].sort((a, b) => {
+         if (b.points !== a.points) return b.points - a.points;
+         return b.lives - a.lives;
+      });
       document.getElementById("final-scoreboard").innerHTML = `
       <div class="glass rounded-xl overflow-hidden text-left">
         <table class="w-full text-sm">
@@ -453,18 +504,21 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     document.getElementById("game-over-screen").classList.add("hidden");
     document.getElementById("spectator-notice").classList.add("hidden");
   }
+  
+  function handleLobbyRestarted() {
+     document.getElementById("game-board").classList.add("hidden");
+     document.getElementById("game-over-screen").classList.add("hidden");
+     document.getElementById("waiting-screen").classList.remove("hidden");
+     document.getElementById("chat-box").innerHTML = "";
+     appendSystem("♻️ Lobi di-reset oleh Leader. Siap main lagi!");
+  }
 
   return {
-    // base
     showScreen,
     showToast,
     showError,
     copyLobbyId,
-
-    // lobby
     renderLobbyState,
-
-    // gameplay
     buildElementGrid,
     setSelectedElement,
     lockElements,
@@ -475,13 +529,10 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     showResultBanner,
     hideResultBanner,
     showGameOver,
-
-    // chat
     appendChat,
     appendSystem,
-
-    // composite helpers
     setGameStartedUI,
     setLobbyLeftUI,
+    handleLobbyRestarted
   };
 }

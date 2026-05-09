@@ -36,7 +36,7 @@ const MODE_LABELS = {
 const MODE_INFO = {
   points: "1v1 · Best-of-7 · Siapa pertama capai 4 poin menang · Bot mengisi jika solo",
   lives: "1v1 · 3 HP · Kalah ronde = -1 HP · Bot mengisi jika solo",
-  cup: "Hingga 7 pemain + bot mengisi · 3 HP · Sistem eliminasi",
+  cup: "Turnamen Bracket 8-Slot · Eliminasi HP",
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -55,6 +55,10 @@ const socket = createSocketClient({
       ui.showScreen("home");
     },
   },
+});
+
+socket.on("lobby:restarted", () => {
+    ui.handleLobbyRestarted();
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -192,6 +196,11 @@ function goHome() {
   ui.showScreen("home");
 }
 
+function restartLobby() {
+  if (!state.isLeader) return;
+  socket.emit("lobby:restart", { match_id: state.matchId, user_id: state.userId });
+}
+
 function resetState() {
   clearInterval(state.timerInterval);
   Object.assign(state, {
@@ -247,9 +256,7 @@ async function startGame() {
 function chooseElement(name) {
   if (state.currentPhase !== "selection" || state.isSpectator) return;
 
-  state.myChoice = name;
-  ui.setSelectedElement(name);
-
+  // Hanya bisa memilih jika sedang ditugaskan berduel (di mode Cup) atau mode lain
   socket.emit("game:choose", { match_id: state.matchId, user_id: state.userId, element: name });
 }
 
@@ -278,6 +285,7 @@ window.loadLobbies = loadLobbies;
 window.leaveLobby = leaveLobby;
 window.leaveAsSpectator = leaveAsSpectator;
 window.goHome = goHome;
+window.restartLobby = restartLobby;
 
 window.updateGameMode = updateGameMode;
 window.startGame = startGame;
