@@ -159,6 +159,41 @@
       <div class="text-xs text-slate-500">Water</div>
     </div>
   </div>
+
+  <!-- ═══════════════════════ ATURAN SECTION ═══════════════════════ -->
+  <section class="w-full max-w-4xl mt-4 p-6 glass-dark rounded-2xl border border-slate-700">
+    <h2 class="text-2xl md:text-3xl font-display font-bold text-white mb-6 text-center tracking-wide">📖 Aturan Penaklukan</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 hover:border-slate-400 transition-colors">
+        <div class="text-xl mb-1 font-bold text-slate-200">🪨 Batu</div>
+        <div class="text-sm text-slate-400">mengalahkan <span class="text-red-400">Api</span>, <span class="text-slate-200">Gunting</span>, <span class="text-yellow-400">Spons</span></div>
+      </div>
+      <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 hover:border-orange-500 transition-colors">
+        <div class="text-xl mb-1 font-bold text-slate-200">🔥 Api</div>
+        <div class="text-sm text-slate-400">mengalahkan <span class="text-slate-200">Gunting</span>, <span class="text-yellow-400">Spons</span>, <span class="text-sky-300">Kertas</span></div>
+      </div>
+      <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 hover:border-slate-300 transition-colors">
+        <div class="text-xl mb-1 font-bold text-slate-200">✂️ Gunting</div>
+        <div class="text-sm text-slate-400">mengalahkan <span class="text-yellow-400">Spons</span>, <span class="text-sky-300">Kertas</span>, <span class="text-purple-300">Udara</span></div>
+      </div>
+      <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 hover:border-yellow-500 transition-colors">
+        <div class="text-xl mb-1 font-bold text-slate-200">🧽 Spons</div>
+        <div class="text-sm text-slate-400">mengalahkan <span class="text-sky-300">Kertas</span>, <span class="text-purple-300">Udara</span>, <span class="text-cyan-400">Air</span></div>
+      </div>
+      <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 hover:border-sky-400 transition-colors">
+        <div class="text-xl mb-1 font-bold text-slate-200">📄 Kertas</div>
+        <div class="text-sm text-slate-400">mengalahkan <span class="text-purple-300">Udara</span>, <span class="text-cyan-400">Air</span>, <span class="text-slate-400">Batu</span></div>
+      </div>
+      <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 hover:border-purple-400 transition-colors">
+        <div class="text-xl mb-1 font-bold text-slate-200">💨 Udara</div>
+        <div class="text-sm text-slate-400">mengalahkan <span class="text-cyan-400">Air</span>, <span class="text-slate-400">Batu</span>, <span class="text-red-400">Api</span></div>
+      </div>
+      <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 hover:border-cyan-400 transition-colors md:col-span-2 lg:col-span-1">
+        <div class="text-xl mb-1 font-bold text-slate-200">💧 Air</div>
+        <div class="text-sm text-slate-400">mengalahkan <span class="text-slate-400">Batu</span>, <span class="text-red-400">Api</span>, <span class="text-slate-200">Gunting</span></div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <!-- ═══════════════════════ SCREEN: LOBBY ══════════════════════ -->
@@ -1015,6 +1050,24 @@ socket.on("game:eliminated", (data) => {
 });
 
 socket.on("error", (data) => showToast("❌ " + data.message));
+
+// ─────────────────────────────────────────────────────────────
+// MODAL ATURAN onload
+// ─────────────────────────────────────────────────────────────
+window.onload = () => {
+  const modal = document.getElementById("rule-modal");
+  const closeBtn = document.getElementById("close-rule-btn");
+  
+  // Tampilkan modal (ubah 'hidden' jadi 'flex')
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+
+  // Ketika tombol diklik, sembunyikan modal
+  closeBtn.addEventListener("click", () => {
+    modal.classList.remove("flex");
+    modal.classList.add("hidden");
+  });
+};
 </script>
 </body>
 </html>
