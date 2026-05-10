@@ -12,6 +12,23 @@ export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
 
   socket.on("lobby:state", (match) => {
     ui.renderLobbyState(match);
+
+    // LOGIKA TRIGGER ANIMASI VS
+    if (match.mode === "cup" && match.cup_bracket && match.status !== "finished" && match.status !== "waiting") {
+        if (match.cup_bracket.schedule && match.cup_bracket.schedule[match.cup_bracket.current_match_idx]) {
+            const currentMatchId = match.cup_bracket.schedule[match.cup_bracket.current_match_idx].id;
+            
+            // Jika pindah match, munculkan layar VS!
+            if (state.lastCupMatchId !== currentMatchId) {
+                state.lastCupMatchId = currentMatchId;
+                
+                const p1 = match.participants.find(p => p.user_id === match.cup_bracket.active_p1);
+                const p2 = match.participants.find(p => p.user_id === match.cup_bracket.active_p2);
+                
+                if (p1 && p2) ui.showVSOverlay(p1, p2, match.cup_bracket.label);
+            }
+        }
+    }
   });
 
   socket.on("lobby:leader:changed", (data) => {
@@ -115,6 +132,7 @@ export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
     ui.handleLobbyRestarted(); 
     state.currentPhase = "waiting";
     state.myChoice = null;
+    state.lastCupMatchId = null;
     ui.resetElements(); 
   });
 

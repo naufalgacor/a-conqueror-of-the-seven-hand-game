@@ -31,6 +31,7 @@ function serializeMatch(match) {
             ? "chosen"
             : null,
     })),
+    cup_bracket: match.cup_bracket,
   };
 }
 

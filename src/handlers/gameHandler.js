@@ -85,14 +85,17 @@ function createGameService({ io, matches }) {
   
   function advanceCupMatchup(match) {
       let bracket = match.cup_bracket;
+      // PENGAMAN 1: Cegah error undefined schedule
+      if (!bracket || !bracket.schedule) return;
+
       let cm = bracket.schedule[bracket.current_match_idx];
 
       while (cm && cm.w) {
-          if (cm.id === 1) bracket.schedule[4].p1 = cm.w;
-          if (cm.id === 2) bracket.schedule[4].p2 = cm.w;
-          if (cm.id === 3) bracket.schedule[5].p1 = cm.w;
-          if (cm.id === 5) bracket.schedule[6].p1 = cm.w;
-          if (cm.id === 6) bracket.schedule[6].p2 = cm.w;
+          if (cm.id === 1 && bracket.schedule[4]) bracket.schedule[4].p1 = cm.w;
+          if (cm.id === 2 && bracket.schedule[4]) bracket.schedule[4].p2 = cm.w;
+          if (cm.id === 3 && bracket.schedule[5]) bracket.schedule[5].p1 = cm.w;
+          if (cm.id === 5 && bracket.schedule[6]) bracket.schedule[6].p1 = cm.w;
+          if (cm.id === 6 && bracket.schedule[6]) bracket.schedule[6].p2 = cm.w;
 
           bracket.current_match_idx++;
           cm = bracket.schedule[bracket.current_match_idx];
@@ -105,7 +108,7 @@ function createGameService({ io, matches }) {
           bracket.active_p1 = cm.p1;
           bracket.active_p2 = cm.p2;
       } else {
-          match.winner_id = bracket.schedule[6].w; 
+          match.winner_id = bracket.schedule[6] ? bracket.schedule[6].w : null; 
           match.status = "finished";
       }
   }
@@ -145,12 +148,25 @@ function createGameService({ io, matches }) {
 
     if (match.mode === "cup") {
         let bracket = match.cup_bracket;
+        // PENGAMAN 2: Pastikan data bracket ada sebelum mengecek schedule
+        if (!bracket || !bracket.schedule) return false;
+        
         let cm = bracket.schedule[bracket.current_match_idx];
+        if (!cm) return false;
+
         let p1 = match.participants.get(bracket.active_p1);
         let p2 = match.participants.get(bracket.active_p2);
         
         if (!p1 || p1.eliminated || !p2 || p2.eliminated) {
             cm.w = (!p1 || p1.eliminated) ? bracket.active_p2 : bracket.active_p1;
+            
+            // RESET NYAWA
+            const winnerOfMatchup = match.participants.get(cm.w);
+            if (winnerOfMatchup) {
+                winnerOfMatchup.lives = 3; 
+                winnerOfMatchup.eliminated = false;
+            }
+
             advanceCupMatchup(match);
             if (match.status === "finished") {
                 const absoluteWinner = match.participants.get(match.winner_id);
@@ -169,7 +185,13 @@ function createGameService({ io, matches }) {
 
     match.status = "resolving";
     let roundLabel = match.round.toString();
-    if (match.mode === "cup" && match.cup_bracket) roundLabel = `${match.cup_bracket.label} (Match ${match.cup_bracket.schedule[match.cup_bracket.current_match_idx].id})`;
+    
+    // PENGAMAN 3: Cegah crash di penamaan ronde
+    if (match.mode === "cup") {
+        if (match.cup_bracket && match.cup_bracket.schedule && match.cup_bracket.schedule[match.cup_bracket.current_match_idx]) {
+            roundLabel = `${match.cup_bracket.label} (Match ${match.cup_bracket.schedule[match.cup_bracket.current_match_idx].id})`;
+        }
+    }
 
     io.to(matchId).emit("game:phase:resolving", { round: roundLabel });
 
@@ -210,13 +232,17 @@ function createGameService({ io, matches }) {
         participants: getParticipantArray(match).map((p) => ({ user_id: p.user_id, username: p.username, is_bot: p.is_bot, lives: p.lives, points: p.points, eliminated: p.eliminated, is_spectator: p.is_spectator })),
       });
       broadcastLobbyState(io, matchId, match);
-      if (!gameOver) setTimeout(() => startSelectionPhase(matchId), 2500);
+      if (!gameOver) {
+          // PENGAMAN 4: Bersihkan timer liar
+          if (match.roundTimer) clearTimeout(match.roundTimer);
+          match.roundTimer = setTimeout(() => startSelectionPhase(matchId), 2500);
+      }
     }, PHASE_RESOLUTION_MS);
   }
 
   function startSelectionPhase(matchId) {
     const match = getMatch(matches, matchId);
-    if (!match || match.status === "finished") return;
+    if (!match || match.status === "finished" || match.status === "waiting") return;
 
     match.round += 1;
     match.status = "selection";
@@ -225,12 +251,16 @@ function createGameService({ io, matches }) {
 
     let roundLabel = match.round.toString();
     let playersInvolved = [];
-    if (match.mode === "cup" && match.cup_bracket) {
-         roundLabel = `${match.cup_bracket.label} (Match ${match.cup_bracket.schedule[match.cup_bracket.current_match_idx].id})`;
-         const p1 = match.participants.get(match.cup_bracket.active_p1);
-         const p2 = match.participants.get(match.cup_bracket.active_p2);
-         if(p1) playersInvolved.push({user_id: p1.user_id, username: p1.username, is_bot: p1.is_bot});
-         if(p2) playersInvolved.push({user_id: p2.user_id, username: p2.username, is_bot: p2.is_bot});
+    
+    // PENGAMAN 5: Cegah crash pemilihan nama
+    if (match.mode === "cup") {
+        if (match.cup_bracket && match.cup_bracket.schedule && match.cup_bracket.schedule[match.cup_bracket.current_match_idx]) {
+             roundLabel = `${match.cup_bracket.label} (Match ${match.cup_bracket.schedule[match.cup_bracket.current_match_idx].id})`;
+             const p1 = match.participants.get(match.cup_bracket.active_p1);
+             const p2 = match.participants.get(match.cup_bracket.active_p2);
+             if(p1) playersInvolved.push({user_id: p1.user_id, username: p1.username, is_bot: p1.is_bot});
+             if(p2) playersInvolved.push({user_id: p2.user_id, username: p2.username, is_bot: p2.is_bot});
+        }
     } else {
          playersInvolved = getAllActiveParticipants(match).map((p) => ({ user_id: p.user_id, username: p.username, is_bot: p.is_bot }));
     }
@@ -281,10 +311,16 @@ function createGameService({ io, matches }) {
 
     io.to(matchId).emit("game:started", { mode: match.mode, bot_count: botList.length, bots: botList });
     broadcastLobbyState(io, matchId, match);
-    startSelectionPhase(matchId);
+    
+    if (match.roundTimer) clearTimeout(match.roundTimer);
+
+    if (match.mode === "cup") {
+        match.roundTimer = setTimeout(() => startSelectionPhase(matchId), 4000);
+    } else {
+        startSelectionPhase(matchId);
+    }
   }
 
-  // --- PERBAIKAN: Fungsi ini harus diekspor agar server tidak crash saat KICK ---
   function forceCheckState(matchId) {
       const match = getMatch(matches, matchId);
       if (!match || match.status === "waiting") return;
@@ -323,7 +359,7 @@ function createGameService({ io, matches }) {
     startSelectionPhase,
     resolveRound,
     registerGameHandlers,
-    forceCheckState // <-- Ini yang kelupaan di file versi terakhirmu!
+    forceCheckState
   };
 }
 
