@@ -313,9 +313,9 @@
             class="px-6 py-3 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-all font-display text-sm">
             ← KELUAR LOBBY
             </button>
-            <button id="btn-restart-game" onclick="restartLobby()"
+            <button id="btn-restart-game" onclick="window.requestRestartLobby()"
             class="hidden px-8 py-3 rounded-xl font-display text-sm tracking-widest bg-neon-cyan text-slate-900 font-bold hover:bg-cyan-300 active:scale-95 transition-all glow-cyan">
-            MAIN LAGI (RESET)
+            MAIN LAGI
             </button>
         </div>
       </div>
@@ -348,6 +348,18 @@
 </div>
 
 <div id="particles-container" class="fixed inset-0 pointer-events-none z-40 overflow-hidden"></div>
+<div id="kick-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
+  <div class="glass rounded-xl p-6 max-w-sm w-full mx-4 border border-red-500/30 shadow-[0_0_15px_rgba(220,38,38,0.15)] animate-pop-in text-center">
+    <div class="text-4xl mb-3">⚠️</div>
+    <h3 class="text-lg font-display text-white mb-2">Kick Pemain</h3>
+    <p class="text-sm text-slate-300 mb-6">Yakin ingin mengeluarkan <strong id="kick-modal-username" class="text-neon-cyan"></strong> dari lobi?</p>
+    
+    <div class="flex gap-3 justify-center">
+      <button id="btn-cancel-kick" class="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-600 transition-colors">Batal</button>
+      <button id="btn-confirm-kick" class="flex-1 px-4 py-2 rounded-lg text-sm font-semibold bg-red-500/20 hover:bg-red-500/40 border border-red-500/50 transition-colors text-red-400 hover:text-red-300 shadow-[0_0_10px_rgba(220,38,38,0.2)]">Ya, Kick!</button>
+    </div>
+  </div>
+</div>
 
 <script type="module" src="/js/main.js"></script>
 </body>

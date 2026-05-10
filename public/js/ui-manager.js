@@ -73,6 +73,29 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
   }
 
   // ─────────────────────────────────────────────────────────────
+  // KICK MODAL
+  // ─────────────────────────────────────────────────────────────
+  let onConfirmKickCallback = null;
+
+  function showKickModal(username, onConfirm) {
+    document.getElementById("kick-modal-username").textContent = username;
+    document.getElementById("kick-modal").classList.remove("hidden");
+    onConfirmKickCallback = onConfirm; // Simpan aksi yang mau dijalankan
+  }
+
+  function closeKickModal() {
+    document.getElementById("kick-modal").classList.add("hidden");
+    onConfirmKickCallback = null;
+  }
+
+  // Event listener untuk tombol Batal dan Konfirmasi di modal
+  document.getElementById("btn-cancel-kick")?.addEventListener("click", closeKickModal);
+  document.getElementById("btn-confirm-kick")?.addEventListener("click", () => {
+    if (onConfirmKickCallback) onConfirmKickCallback(); // Jalankan emit socket
+    closeKickModal(); // Tutup modal setelah klik
+  });
+
+  // ─────────────────────────────────────────────────────────────
   // LOBBY UI
   // ─────────────────────────────────────────────────────────────
   function renderLobbyState(match) {
@@ -130,6 +153,14 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
           ? `<div class="text-[9px] text-neon-gold font-bold uppercase tracking-widest">${p.custom_title}</div>`
           : "";
 
+        // --- TAMBAHAN KODE TOMBOL KICK ---
+        const showKickBtn = state.isLeader && !isMe;
+        const safeName = p.username.replace(/'/g, "\\'"); // Berjaga-jaga kalau ada user pakai tanda kutip di namanya
+        const kickBtnHtml = showKickBtn 
+          ? `<button onclick="window.requestKickPlayer('${p.user_id}', '${safeName}')" class="ml-auto bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/50 rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide transition-colors">Kick</button>`
+          : "";
+        // ---------------------------------
+
         return `
       <div class="flex items-center gap-2.5 rounded-xl px-3 py-2
         ${isMe ? "bg-neon-cyan/10 border border-neon-cyan/25" : "bg-slate-900/40 border border-transparent"}">
@@ -146,7 +177,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
             ${match.status !== "waiting" ? ` · 🏅${p.points} · ❤️${p.lives}` : ""}
           </div>
         </div>
-        ${p.eliminated ? '<span class="text-xs text-red-500 flex-shrink-0">💀</span>' : ""}
+        ${p.eliminated ? '<span class="text-xs text-red-500 flex-shrink-0">💀</span>' : kickBtnHtml}
       </div>`;
       })
       .join("");
@@ -418,6 +449,18 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
 
     document.getElementById("game-over-screen").classList.remove("hidden");
 
+    const btnRestart = document.getElementById("btn-restart-game");
+    if (btnRestart) {
+        console.log("Apakah saya leader?", state.isLeader); // Cek di Inspect Element (F12)
+        if (state.isLeader) {
+            btnRestart.classList.remove("hidden");
+            btnRestart.style.display = "block"; // Paksa muncul!
+        } else {
+            btnRestart.classList.add("hidden");
+            btnRestart.style.display = "none";
+        }
+    }
+
     if (isWinner) {
       spawnParticles();
       setTimeout(spawnParticles, 500);
@@ -524,6 +567,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     lockElements,
     resetElements,
     startTimer,
+    showKickModal,
     stopTimer,
     setPhaseUI,
     showResultBanner,

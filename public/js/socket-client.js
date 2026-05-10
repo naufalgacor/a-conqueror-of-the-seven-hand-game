@@ -109,5 +109,45 @@ export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
 
   socket.on("error", (data) => ui.showToast("❌ " + data.message));
 
+// Listener jika player ini yang di-kick oleh leader
+  socket.on("lobby:kicked", (data) => {
+    ui.showToast("❌ " + data.message, 5000);
+    ui.setLobbyLeftUI(); // Kembalikan UI ke layar awal/home
+    
+    // Panggil action leave agar state bersih
+    if (actions.onLobbyLeft) actions.onLobbyLeft();
+  });
+
+  socket.on("lobby:restarted", () => {
+    ui.handleLobbyRestarted(); // Panggil fungsi UI untuk kembali ke layar lobi
+    state.currentPhase = "waiting";
+    state.myChoice = null;
+    ui.resetElements(); // Bersihkan tombol elemen (batu/gunting/kertas dsb)
+  });
+
+  // Daftarkan fungsi ke window agar bisa diakses lewat inline onclick di HTML UI
+  window.requestKickPlayer = (targetId, targetUsername) => {
+    
+    // Panggil modal custom yang baru dibuat
+    ui.showKickModal(targetUsername, () => {
+      
+      // KODE INI HANYA DIJALANKAN KALAU USER KLIK "Ya, Kick!"
+      socket.emit("lobby:kick", {
+        match_id: state.matchId,
+        user_id: state.userId,
+        target_id: targetId
+      });
+      
+    });
+
+    window.requestRestartLobby = () => {
+    socket.emit("lobby:restart", {
+      match_id: state.matchId,
+      user_id: state.userId
+    });
+  };
+    
+  };
+
   return socket;
 }
