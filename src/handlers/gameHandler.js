@@ -201,6 +201,7 @@ function createGameService({ io, matches }) {
 
     applyRoundOutcome(match, winners, losers, draw);
     const gameOver = checkGameOver(match);
+    if (gameOver) match.status = "finished";
 
     setTimeout(() => {
       if(!gameOver) match.status = "result";
@@ -288,6 +289,7 @@ function createGameService({ io, matches }) {
       const match = getMatch(matches, matchId);
       if (!match || match.status === "waiting") return;
       if (checkGameOver(match)) {
+          match.status = "finished";
           io.to(matchId).emit("game:phase:result", { 
               game_over: true, 
               winner_id: match.winner_id,
