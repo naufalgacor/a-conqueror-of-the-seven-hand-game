@@ -135,35 +135,33 @@ function registerLobbyHandlers({ io, socket, matches, users, gameService }) {
     const match = getMatch(matches, match_id);
     if (!match) return;
 
-    // 1. Validasi: Hanya Leader yang bisa nge-kick
     if (match.leader_id !== user_id) return;
-    
-    // 2. Validasi: Leader tidak bisa kick dirinya sendiri
     if (user_id === target_id) return;
 
     const targetParticipant = match.participants.get(target_id);
     if (!targetParticipant) return;
 
-    // 3. Jika player adalah manusia, beritahu socket-nya dan keluarkan dari Room
     if (!targetParticipant.is_bot) {
       const targetSocketId = targetParticipant.socket_id;
       if (targetSocketId) {
         const targetSocket = io.sockets.sockets.get(targetSocketId);
         if (targetSocket) {
-          // Kirim notifikasi ke user yang di-kick
           targetSocket.emit("lobby:kicked", { message: "Kamu dikeluarkan dari lobi oleh Leader." });
-          // Keluarkan dari room match
           targetSocket.leave(match_id);
         }
-        // Hapus dari data users online
         users.delete(targetSocketId);
       }
     }
 
-    // 4. Hapus player dari daftar participants lobby
+    // Eksekusi penghapusan
     match.participants.delete(target_id);
 
-    // 5. Broadcast update lobby terbaru ke sisa pemain
+    // JIKA GAME SEDANG BERJALAN: Paksa engine cek pemenang
+    if (match.status !== "waiting" && match.status !== "finished") {
+        // Panggil fungsi pengecekan instan di gameService
+        gameService.forceCheckState(match_id);
+    }
+
     broadcastLobbyState(io, match_id, match);
   });
 

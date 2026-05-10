@@ -1,6 +1,4 @@
 export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
-  // socket.io client is loaded via <script src="/socket.io/socket.io.js"></script>
-  // so `io()` is available globally.
   const socket = io();
 
   socket.on("connect", () => console.log("[Socket] Connected:", socket.id));
@@ -52,7 +50,6 @@ export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
   });
 
   socket.on("game:timer:tick", (data) => {
-    // Sinkronisasi timer dari server
     const el = document.getElementById("timer-display");
     if (el) el.textContent = data.remaining;
   });
@@ -68,7 +65,6 @@ export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
   });
 
   socket.on("game:player:chosen", (data) => {
-    // Optional: avoid spamming chat when player changes choice
     if (data.changed) {
       ui.appendSystem(`🔁 ${data.username} mengganti pilihan`);
       return;
@@ -109,44 +105,35 @@ export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
 
   socket.on("error", (data) => ui.showToast("❌ " + data.message));
 
-// Listener jika player ini yang di-kick oleh leader
   socket.on("lobby:kicked", (data) => {
     ui.showToast("❌ " + data.message, 5000);
-    ui.setLobbyLeftUI(); // Kembalikan UI ke layar awal/home
-    
-    // Panggil action leave agar state bersih
+    ui.setLobbyLeftUI(); 
     if (actions.onLobbyLeft) actions.onLobbyLeft();
   });
 
   socket.on("lobby:restarted", () => {
-    ui.handleLobbyRestarted(); // Panggil fungsi UI untuk kembali ke layar lobi
+    ui.handleLobbyRestarted(); 
     state.currentPhase = "waiting";
     state.myChoice = null;
-    ui.resetElements(); // Bersihkan tombol elemen (batu/gunting/kertas dsb)
+    ui.resetElements(); 
   });
 
-  // Daftarkan fungsi ke window agar bisa diakses lewat inline onclick di HTML UI
+  // --- PERBAIKAN: Fungsi dipecah agar tidak bersarang (nested) ---
   window.requestKickPlayer = (targetId, targetUsername) => {
-    
-    // Panggil modal custom yang baru dibuat
     ui.showKickModal(targetUsername, () => {
-      
-      // KODE INI HANYA DIJALANKAN KALAU USER KLIK "Ya, Kick!"
       socket.emit("lobby:kick", {
         match_id: state.matchId,
         user_id: state.userId,
         target_id: targetId
       });
-      
     });
+  };
 
-    window.requestRestartLobby = () => {
+  window.requestRestartLobby = () => {
     socket.emit("lobby:restart", {
       match_id: state.matchId,
       user_id: state.userId
     });
-  };
-    
   };
 
   return socket;

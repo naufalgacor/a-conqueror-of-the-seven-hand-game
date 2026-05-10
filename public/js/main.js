@@ -57,10 +57,6 @@ const socket = createSocketClient({
   },
 });
 
-socket.on("lobby:restarted", () => {
-    ui.handleLobbyRestarted();
-});
-
 // ─────────────────────────────────────────────────────────────
 // HOME ACTIONS (REST)
 // ─────────────────────────────────────────────────────────────
@@ -250,13 +246,16 @@ async function startGame() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// GAME ACTIONS
+// GAME ACTIONS (PERBAIKAN BUG)
 // ─────────────────────────────────────────────────────────────
 
 function chooseElement(name) {
-  if (state.currentPhase !== "selection" || state.isSpectator) return;
+  if (state.isSpectator) return;
 
-  // Hanya bisa memilih jika sedang ditugaskan berduel (di mode Cup) atau mode lain
+  // Optimistic UI: Langsung nyalakan tombol agar UI terasa responsif
+  ui.setSelectedElement(name);
+
+  // Biarkan server yang memvalidasi apakah sedang di phase selection atau tidak
   socket.emit("game:choose", { match_id: state.matchId, user_id: state.userId, element: name });
 }
 
