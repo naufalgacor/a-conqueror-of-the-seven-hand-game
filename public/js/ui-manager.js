@@ -127,6 +127,12 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     document.getElementById("current-mode-display").textContent =
       `${MODE_LABELS[match.mode] || match.mode} — ${modeInfo}`;
 
+    const topBadge = document.getElementById("top-mode-badge");
+    if (topBadge) {
+        topBadge.textContent = MODE_LABELS[match.mode] || match.mode;
+        topBadge.classList.remove("hidden");
+    }
+
     const me = match.participants.find((p) => p.user_id === state.userId);
     if (me) {
       state.isSpectator = me.is_spectator;
@@ -136,12 +142,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     const isCupMode = match.mode === "cup" && match.cup_bracket;
     const isGameRunning = match.status !== "waiting" && match.status !== "finished";
     
-    const bracketContainer = document.getElementById("cup-bracket-container");
-    if (bracketContainer) {
-        // Tampilkan bracket HANYA jika mode CUP dan game sedang jalan
-        bracketContainer.classList.toggle("hidden", !(isCupMode && isGameRunning));
-    }
-
     if (isCupMode && isGameRunning) {
         renderCupPlayers(match);
     } else {
@@ -224,72 +224,121 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
       .join("");
   }
 
+  // Lacak match yang sedang ditampilkan di popup
+  let _lastCupMatchKey = null;
+  let _cupPopupTimer = null;
+
+  function showCupMatchPopup(match) {
+      const bracket = match.cup_bracket;
+      if (!bracket) return;
+
+      const matchKey = `${bracket.active_p1}-${bracket.active_p2}`;
+      if (_lastCupMatchKey === matchKey) return; // Match sama, jangan tampil lagi
+      _lastCupMatchKey = matchKey;
+
+      const p1 = match.participants.find(x => x.user_id === bracket.active_p1);
+      const p2 = match.participants.find(x => x.user_id === bracket.active_p2);
+      if (!p1 || !p2) return;
+
+      const currentMatchData = bracket.schedule?.find(m =>
+          m.p1 === bracket.active_p1 && m.p2 === bracket.active_p2);
+
+      const popup   = document.getElementById("cup-match-popup");
+      const label   = document.getElementById("cup-popup-match-label");
+      const fighters = document.getElementById("cup-popup-fighters");
+      const bar     = document.getElementById("cup-popup-bar");
+      if (!popup) return;
+
+      label.textContent = currentMatchData?.id ? `Match ${currentMatchData.id}` : "Match Sekarang";
+
+      fighters.innerHTML = `
+        <div class="flex-1 text-center">
+          <div class="text-2xl mb-1">${p1.is_bot ? '🤖' : '👤'}</div>
+          <div class="text-xs font-semibold text-slate-100 truncate">${p1.username}</div>
+          <div class="text-[10px] text-red-400 mt-0.5">❤️ ${p1.lives} HP</div>
+        </div>
+        <div class="flex-shrink-0">
+          <span class="text-sm font-black italic text-red-500 bg-slate-900/80 px-2 py-0.5 rounded">VS</span>
+        </div>
+        <div class="flex-1 text-center">
+          <div class="text-2xl mb-1">${p2.is_bot ? '🤖' : '👤'}</div>
+          <div class="text-xs font-semibold text-slate-100 truncate">${p2.username}</div>
+          <div class="text-[10px] text-red-400 mt-0.5">❤️ ${p2.lives} HP</div>
+        </div>
+      `;
+
+      // Reset countdown bar
+      bar.style.transition = "none";
+      bar.style.width = "100%";
+      popup.classList.remove("hidden");
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+          bar.style.transition = "width 10s linear";
+          bar.style.width = "0%";
+      }));
+
+      clearTimeout(_cupPopupTimer);
+      _cupPopupTimer = setTimeout(() => popup.classList.add("hidden"), 10000);
+  }
+
   function renderCupPlayers(match) {
       const bracket = match.cup_bracket;
       if (!bracket || !bracket.schedule) {
+          document.getElementById("cup-bracket-container")?.classList.add("hidden");
           renderIngamePlayers(match); return;
       }
 
-      // Render daftar bagan kiri-kanan
-      // Render daftar bagan kiri-kanan dengan desain LEBIH PRESISI
+      // Tampilkan bagan di sidebar
+      const bracketContainer = document.getElementById("cup-bracket-container");
+      if (bracketContainer) bracketContainer.classList.remove("hidden");
+
+      // Tampilkan popup jika ada match baru
+      showCupMatchPopup(match);
+
+      // Render semua pertandingan di ronde ini ke dalam sidebar
       const matchesInRound = bracket.schedule.filter(m => m.r === bracket.round);
-      const bracketHtml = matchesInRound.map(m => {
+      document.getElementById("cup-bracket-list").innerHTML = matchesInRound.map(m => {
           const p1 = match.participants.find(x => x.user_id === m.p1);
           const p2 = match.participants.find(x => x.user_id === m.p2);
-          
-          const n1 = p1 ? `${p1.username}${p1.is_bot ? '🤖' : ''}` : (m.p1 === "BYE" ? "BYE" : "???");
-          const n2 = p2 ? `${p2.username}${p2.is_bot ? '🤖' : ''}` : (m.p2 === "BYE" ? "BYE" : "???");
-          
-          const isActive = (m.p1 === bracket.active_p1 && m.p2 === bracket.active_p2);
+          const n1 = p1 ? p1.username : (m.p1 === "BYE" ? "BYE" : "???");
+          const n2 = p2 ? p2.username : (m.p2 === "BYE" ? "BYE" : "???");
+          const isActive = m.p1 === bracket.active_p1 && m.p2 === bracket.active_p2;
           const isFinished = Boolean(m.w);
           const p1Won = m.w === m.p1;
           const p2Won = m.w === m.p2;
 
-          // Pewarnaan border dan background berdasarkan status
-          const borderClass = isActive 
-              ? "border-neon-cyan shadow-[0_0_8px_rgba(0,245,255,0.3)] bg-cyan-950/40" 
-              : isFinished 
-                  ? "border-slate-700/30 bg-slate-800/20 opacity-75" 
-                  : "border-slate-600/50 bg-slate-800/40";
-          
-          // Badge Status (Pemenang / Sedang Duel / Menunggu)
-          let statusHtml = "";
-          if (isFinished) {
-               const winnerName = match.participants.find(x => x.user_id === m.w)?.username || m.w;
-               statusHtml = `<div class="mt-2 text-[9px] text-neon-gold bg-neon-gold/10 rounded px-2 py-0.5 inline-block mx-auto border border-neon-gold/30 uppercase tracking-wider font-bold">🏆 Pemenang: ${winnerName}</div>`;
-          } else if (isActive) {
-               statusHtml = `<div class="mt-2 text-[9px] text-neon-cyan animate-pulse bg-neon-cyan/10 rounded px-2 py-0.5 inline-block mx-auto border border-neon-cyan/30 uppercase tracking-wider font-bold">⚔️ SEDANG BERDUEL</div>`;
-          } else {
-               statusHtml = `<div class="mt-2 text-[9px] text-slate-500 uppercase tracking-wider">⏳ Menunggu</div>`;
-          }
+          const cardClass = isActive
+              ? "border border-neon-cyan/60 bg-cyan-950/40 shadow-[0_0_8px_rgba(0,245,255,0.2)]"
+              : isFinished
+                  ? "border border-slate-700/30 bg-slate-800/10 opacity-50"
+                  : "border border-slate-700/40 bg-slate-800/20";
+
+          const p1Cls = isFinished && !p1Won ? "text-slate-500 line-through" : p1Won ? "text-neon-gold font-bold" : "text-slate-200";
+          const p2Cls = isFinished && !p2Won ? "text-slate-500 line-through" : p2Won ? "text-neon-gold font-bold" : "text-slate-200";
+
+          let badge = "";
+          if (isActive)    badge = `<span class="text-[9px] text-neon-cyan animate-pulse">⚔️ Berduel</span>`;
+          else if (isFinished) {
+              const wn = match.participants.find(x => x.user_id === m.w)?.username || "";
+              badge = `<span class="text-[9px] text-neon-gold">🏆 ${wn}</span>`;
+          } else badge = `<span class="text-[9px] text-slate-600">⏳ Menunggu</span>`;
 
           return `
-          <div class="flex flex-col border rounded-lg p-2.5 ${borderClass} transition-all text-center">
-              <div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-center text-xs font-semibold w-full">
-                  <span class="${p1?.eliminated || (isFinished && !p1Won) ? 'text-slate-500 line-through' : (p1Won ? 'text-neon-gold' : 'text-slate-100')} truncate text-right">
-                      ${p1Won ? '👑 ' : ''}${n1}
-                  </span>
-                  
-                  <span class="text-red-500 italic font-black text-[10px] px-1.5 py-0.5 bg-slate-900/60 rounded">VS</span>
-                  
-                  <span class="${p2?.eliminated || (isFinished && !p2Won) ? 'text-slate-500 line-through' : (p2Won ? 'text-neon-gold' : 'text-slate-100')} truncate text-left">
-                      ${n2}${p2Won ? ' 👑' : ''}
-                  </span>
-              </div>
-              
-              <div class="text-center w-full">${statusHtml}</div>
-          </div>
-          `;
-      });
-      
-      document.getElementById("cup-bracket-list").innerHTML = bracketHtml.join("");
+          <div class="rounded-lg px-2.5 py-2 ${cardClass} transition-all">
+            <div class="flex items-center gap-2 text-[11px]">
+              <span class="${p1Cls} flex-1 truncate text-right">${p1Won ? "👑 " : ""}${n1}${p1?.is_bot ? " 🤖" : ""}</span>
+              <span class="text-red-500 font-black italic flex-shrink-0 text-[10px]">VS</span>
+              <span class="${p2Cls} flex-1 truncate">${n2}${p2?.is_bot ? " 🤖" : ""}${p2Won ? " 👑" : ""}</span>
+            </div>
+            <div class="text-center mt-1">${badge}</div>
+          </div>`;
+      }).join("");
 
-      // Render pemain yang sedang bertarung besar di bawah
+      // Render pemain aktif di area tengah
       const activePlayers = [
         match.participants.find(p => p.user_id === bracket.active_p1),
         match.participants.find(p => p.user_id === bracket.active_p2)
       ].filter(Boolean);
-      
+
       document.getElementById("ingame-players").innerHTML = activePlayers.map((p) => {
           const isMe = p.user_id === state.userId;
           const hasChosen = p.choice && p.choice !== "";
@@ -577,6 +626,10 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     document.getElementById("waiting-screen").classList.remove("hidden");
     document.getElementById("game-over-screen").classList.add("hidden");
     document.getElementById("spectator-notice").classList.add("hidden");
+    // Reset popup state
+    _lastCupMatchKey = null;
+    clearTimeout(_cupPopupTimer);
+    document.getElementById("cup-match-popup")?.classList.add("hidden");
   }
   
   function handleLobbyRestarted() {
@@ -584,6 +637,10 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
      document.getElementById("game-over-screen").classList.add("hidden");
      document.getElementById("waiting-screen").classList.remove("hidden");
      document.getElementById("chat-box").innerHTML = "";
+     // Reset popup state
+     _lastCupMatchKey = null;
+     clearTimeout(_cupPopupTimer);
+     document.getElementById("cup-match-popup")?.classList.add("hidden");
      appendSystem("♻️ Lobi di-reset oleh Leader. Siap main lagi!");
   }
 

@@ -189,7 +189,10 @@
 
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div>
-      <div class="font-display text-xl text-neon-cyan text-glow-cyan">LOBBY</div>
+      <div class="flex items-center gap-3">
+        <div class="font-display text-xl text-neon-cyan text-glow-cyan">LOBBY</div>
+        <div id="top-mode-badge" class="px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-[10px] text-slate-300 font-semibold uppercase tracking-wider hidden"></div>
+      </div>
       <div class="flex items-center gap-2 mt-0.5">
         <span id="lobby-id-display" class="text-xs text-slate-500 font-mono"></span>
         <button id="btn-copy-id" onclick="copyLobbyId()"
@@ -218,6 +221,11 @@
       <div class="glass rounded-2xl p-4">
         <div class="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-3">Pemain</div>
         <div id="players-list" class="flex flex-col gap-2"></div>
+      </div>
+
+      <div id="cup-bracket-container" class="hidden glass rounded-2xl p-3">
+        <div class="text-[10px] text-neon-gold uppercase tracking-widest font-bold mb-2 text-center">🏅 Bagan Turnamen</div>
+        <div id="cup-bracket-list" class="flex flex-col gap-1.5"></div>
       </div>
 
       <div id="leader-panel" class="glass rounded-2xl p-4 hidden">
@@ -282,21 +290,6 @@
           <div id="result-text" class="font-display text-xl"></div>
           <div id="result-detail" class="text-sm text-slate-400 mt-1"></div>
         </div>
-
-          <aside class="w-80 flex flex-col gap-4">
-  
-  <div id="cup-bracket-container" class="hidden bg-slate-900/40 rounded-xl p-4 border border-slate-700/50 shadow-lg">
-    <div class="text-xs text-neon-gold uppercase tracking-widest font-semibold mb-3 flex items-center justify-between">
-      <span>🏅 Bagan Turnamen</span>
-      <span class="text-[10px] text-neon-cyan bg-cyan-900/40 px-2 py-0.5 rounded border border-cyan-500/50">*Menang = Nyawa Penuh</span>
-    </div>
-    <div id="cup-bracket-list" class="flex flex-col gap-1.5"></div>
-  </div>
-
-  <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-700/50">
-    <div id="players-list" class="space-y-2"></div>
-  </div>
-</aside>
 
         <div>
           <div class="text-xs text-slate-500 uppercase tracking-widest mb-3 text-center">Pilih Elemen</div>
@@ -365,6 +358,19 @@
       <button id="btn-cancel-kick" class="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-600 transition-colors">Batal</button>
       <button id="btn-confirm-kick" class="flex-1 px-4 py-2 rounded-lg text-sm font-semibold bg-red-500/20 hover:bg-red-500/40 border border-red-500/50 transition-colors text-red-400 hover:text-red-300 shadow-[0_0_10px_rgba(220,38,38,0.2)]">Ya, Kick!</button>
     </div>
+  </div>
+</div>
+
+<div id="cup-match-popup" class="hidden fixed z-[95] glass-dark rounded-2xl border border-neon-gold/40 shadow-[0_0_24px_rgba(255,215,0,0.2)] overflow-hidden" style="top:68px;right:16px;width:300px;">
+  <div class="p-4">
+    <div class="text-center mb-3">
+      <div class="text-[9px] text-slate-500 uppercase tracking-widest mb-0.5">🏅 Bagan Turnamen</div>
+      <div id="cup-popup-match-label" class="text-xs text-neon-gold font-bold uppercase tracking-wider"></div>
+    </div>
+    <div id="cup-popup-fighters" class="flex items-center justify-center gap-4"></div>
+  </div>
+  <div class="w-full bg-slate-800/80 h-0.5">
+    <div id="cup-popup-bar" class="h-full bg-neon-gold" style="width:100%"></div>
   </div>
 </div>
 
