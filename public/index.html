@@ -2,7 +2,7 @@
 <html class="dark" lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Seven-Hand Game — A Conqueror</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script src="/socket.io/socket.io.js"></script>
@@ -14,6 +14,9 @@
       darkMode: "class",
       theme: {
         extend: {
+          screens: {
+            'xs': '480px',
+          },
           colors: {
             "on-secondary-fixed": "#001c37",
             "on-primary-fixed-variant": "#574500",
@@ -72,11 +75,17 @@
             slideUp: { "0%":{opacity:0,transform:"translateY(16px)"}, "100%":{opacity:1,transform:"translateY(0)"} },
             shake:   { "0%,100%":{transform:"translateX(0)"}, "25%":{transform:"translateX(-6px)"}, "75%":{transform:"translateX(6px)"} },
             popIn:   { "0%":{opacity:0,transform:"scale(0.85)"}, "100%":{opacity:1,transform:"scale(1)"} },
+            slideInLeft: { "0%":{transform:"translateX(-100%)"}, "100%":{transform:"translateX(0)"} },
+            slideInRight: { "0%":{transform:"translateX(100%)"}, "100%":{transform:"translateX(0)"} },
+            float: { "0%,100%":{transform:"translateY(0px)"}, "50%":{transform:"translateY(-8px)"} },
           },
           animation: {
             "slide-up":"slideUp 0.35s ease-out forwards",
             "shake":"shake 0.4s ease",
             "pop-in":"popIn 0.25s ease-out forwards",
+            "slide-in-left":"slideInLeft 0.3s ease-out forwards",
+            "slide-in-right":"slideInRight 0.3s ease-out forwards",
+            "float":"float 3s ease-in-out infinite",
           },
         },
       },
@@ -84,20 +93,55 @@
   </script>
 
   <style>
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --sidebar-left-width: 280px;
+      --sidebar-right-width: 320px;
+      --header-height: 90px;
+      --gap: 1rem;
+    }
+
+    @media (min-width: 1024px) {
+      :root {
+        --header-height: 56px;
+      }
+    }
+    @media (min-width: 1280px) {
+      :root {
+        --sidebar-left-width: 300px;
+        --sidebar-right-width: 340px;
+        --header-height: 60px;
+        --gap: 1.25rem;
+      }
+    }
+
+    @media (min-width: 1536px) {
+      :root {
+        --sidebar-left-width: 320px;
+        --sidebar-right-width: 360px;
+      }
+    }
 
     body {
       font-family: "Inter", sans-serif;
       background-color: #121411;
-      background-image: radial-gradient(ellipse at 20% 50%, rgba(242,202,80,.06) 0%, transparent 55%),
-                        radial-gradient(ellipse at 80% 20%, rgba(15,76,129,.08) 0%, transparent 50%),
-                        radial-gradient(circle at 50% 100%, rgba(51,53,50,.5) 0%, rgba(18,20,17,1) 70%);
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(242,202,80,.06) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 20%, rgba(15,76,129,.08) 0%, transparent 50%),
+        radial-gradient(circle at 50% 100%, rgba(51,53,50,.5) 0%, rgba(18,20,17,1) 70%);
       color: #e3e3de;
-      min-height: 100vh;
+      min-height: 100dvh;
       overflow-x: hidden;
     }
 
-    /* Bronze / etched frame */
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(153,144,124,.25); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(153,144,124,.45); }
+
+    /* ── Bronze frame ── */
     .bronze-frame {
       border: 1px solid #99907c;
       position: relative;
@@ -111,51 +155,73 @@
       border-radius: inherit;
     }
 
-    /* Glass variants */
+    /* ── Glass ── */
     .glass {
-      background: rgba(30,32,29,.7);
+      background: rgba(30,32,29,.75);
       border: 1px solid rgba(153,144,124,.25);
       backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
     .glass-dark {
-      background: rgba(12,14,11,.88);
+      background: rgba(12,14,11,.9);
       border: 1px solid rgba(153,144,124,.2);
       backdrop-filter: blur(16px);
-    }
-    .grimoire-card {
-      background: linear-gradient(180deg, #1e201d 0%, #121411 100%);
+      -webkit-backdrop-filter: blur(16px);
     }
 
-    /* Glows */
-    .glow-gold  { box-shadow: 0 0 15px rgba(242,202,80,.45), 0 0 36px rgba(242,202,80,.12); }
+    /* ── Glows ── */
+    .glow-gold  { box-shadow: 0 0 18px rgba(242,202,80,.45), 0 0 40px rgba(242,202,80,.12); }
     .glow-blue  { box-shadow: 0 0 15px rgba(15,76,129,.5); }
     .glow-red   { box-shadow: 0 0 15px rgba(255,180,171,.4); }
     .glow-cyan  { box-shadow: 0 0 14px rgba(0,245,255,.4),  0 0 36px rgba(0,245,255,.12); }
-    .glow-pink  { box-shadow: 0 0 14px rgba(255,0,128,.4),  0 0 36px rgba(255,0,128,.12); }
     .glow-green { box-shadow: 0 0 14px rgba(57,255,20,.4),  0 0 36px rgba(57,255,20,.12); }
-    .glow-purple{ box-shadow: 0 0 14px rgba(191,0,255,.4),  0 0 36px rgba(191,0,255,.12); }
     .alchemical-glow { box-shadow: inset 0 0 20px rgba(242,202,80,.1), 0 0 15px rgba(15,76,129,.2); }
     .active-rune-glow { box-shadow: 0 0 15px rgba(242,202,80,.6), inset 0 0 10px rgba(212,175,55,.4); }
 
-    /* Text glows */
-    .text-glow-gold   { text-shadow: 0 0 10px rgba(242,202,80,.8),  0 0 28px rgba(242,202,80,.35); }
-    .text-glow-cyan   { text-shadow: 0 0 10px rgba(0,245,255,.8),   0 0 28px rgba(0,245,255,.35); }
-    .text-glow-pink   { text-shadow: 0 0 10px rgba(255,0,128,.8),   0 0 28px rgba(255,0,128,.35); }
-    .text-glow-green  { text-shadow: 0 0 10px rgba(57,255,20,.8),   0 0 28px rgba(57,255,20,.35); }
+    /* ── Text glows ── */
+    .text-glow-gold { text-shadow: 0 0 12px rgba(242,202,80,.8), 0 0 32px rgba(242,202,80,.35); }
+    .text-glow-cyan { text-shadow: 0 0 10px rgba(0,245,255,.8), 0 0 28px rgba(0,245,255,.35); }
+    .text-glow-pink { text-shadow: 0 0 10px rgba(255,0,128,.8), 0 0 28px rgba(255,0,128,.35); }
+    .text-glow-green{ text-shadow: 0 0 10px rgba(57,255,20,.8),  0 0 28px rgba(57,255,20,.35); }
 
-    /* Element buttons */
+    /* ── Element buttons ── */
     .elem-btn {
-      position: relative; transition: all .2s; cursor: pointer;
-      border: 1px solid; border-radius: 8px; padding: 10px 6px;
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; gap: 5px;
-      font-weight: 600; font-size: .68rem;
-      text-transform: uppercase; letter-spacing: .08em; user-select: none;
+      position: relative;
+      transition: all .2s cubic-bezier(.34,1.56,.64,1);
+      cursor: pointer;
+      border: 1px solid;
+      border-radius: 10px;
+      padding: 10px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      font-weight: 600;
+      font-size: .65rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      user-select: none;
+      min-height: 72px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
-    .elem-btn:hover:not(:disabled) { transform: translateY(-5px) scale(1.07); }
-    .elem-btn:active:not(:disabled) { transform: scale(.96); }
+    .elem-btn:hover:not(:disabled) { transform: translateY(-6px) scale(1.08); }
+    .elem-btn:active:not(:disabled) { transform: scale(.95); }
     .elem-btn:disabled { opacity: .3; cursor: not-allowed; }
-    .elem-btn.selected { transform: translateY(-7px) scale(1.1); border-width: 2px; }
+    .elem-btn.selected { transform: translateY(-8px) scale(1.12); border-width: 2px; }
+
+    .elem-btn .elem-emoji { font-size: 1.5rem; line-height: 1; }
+
+    @media (min-width: 640px) {
+      .elem-btn { min-height: 80px; padding: 12px 6px; }
+      .elem-btn .elem-emoji { font-size: 1.75rem; }
+    }
+
+    @media (min-width: 1024px) {
+      .elem-btn { min-height: 88px; font-size: .7rem; }
+      .elem-btn .elem-emoji { font-size: 2rem; }
+    }
 
     .elem-Rock     { border-color:#94a3b8;background:rgba(148,163,184,.1);color:#cbd5e1 }
     .elem-Rock.selected    { background:rgba(148,163,184,.25);box-shadow:0 0 20px rgba(148,163,184,.5) }
@@ -172,18 +238,16 @@
     .elem-Water    { border-color:#06b6d4;background:rgba(6,182,212,.1);color:#a5f3fc }
     .elem-Water.selected   { background:rgba(6,182,212,.25);box-shadow:0 0 20px rgba(6,182,212,.5) }
 
-    /* Timer ring */
-    .timer-ring { width:72px;height:72px;position:relative;display:flex;align-items:center;justify-content:center }
+    /* ── Timer ring ── */
+    .timer-ring { width:72px;height:72px;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0 }
     .timer-ring svg { position:absolute;top:0;left:0;transform:rotate(-90deg) }
     #timerPath { stroke:#f2ca50;stroke-width:4;fill:none;stroke-linecap:round;stroke-dasharray:200;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke .5s }
 
-    /* Chat */
+    /* ── Chat ── */
     .chat-msg { animation: slideUp .3s ease-out forwards; }
-    .chat-box::-webkit-scrollbar { width: 4px; }
-    .chat-box::-webkit-scrollbar-track { background: transparent; }
-    .chat-box::-webkit-scrollbar-thumb { background: rgba(153,144,124,.3); border-radius: 2px; }
+    .chat-box { overflow-y: auto; }
 
-    /* Screens */
+    /* ── Screens ── */
     .screen { display: none; }
     .screen.active { display: flex; }
 
@@ -192,16 +256,381 @@
     .live-dot { animation: pulse 1.5s infinite }
     .copy-btn-success { border-color:#39ff14!important;color:#39ff14!important }
 
-    /* Scrollbar hide */
     .scrollbar-hide::-webkit-scrollbar { display:none }
     .scrollbar-hide { -ms-overflow-style:none;scrollbar-width:none }
 
-    /* Material symbols */
     .material-symbols-outlined { font-variation-settings:'FILL' 1; font-family:'Material Symbols Outlined'; }
 
-    /* Decorative corner accents */
-    .corner-tl::before { content:''; position:absolute; top:0; left:0; width:16px; height:16px; border-top:1px solid rgba(242,202,80,.5); border-left:1px solid rgba(242,202,80,.5); }
-    .corner-tr::after  { content:''; position:absolute; top:0; right:0; width:16px; height:16px; border-top:1px solid rgba(242,202,80,.5); border-right:1px solid rgba(242,202,80,.5); }
+    /* ── Corner accents ── */
+    .corner-tl::before { content:''; position:absolute; top:0; left:0; width:18px; height:18px; border-top:1px solid rgba(242,202,80,.55); border-left:1px solid rgba(242,202,80,.55); z-index:1; }
+    .corner-tr::after  { content:''; position:absolute; top:0; right:0; width:18px; height:18px; border-top:1px solid rgba(242,202,80,.55); border-right:1px solid rgba(242,202,80,.55); z-index:1; }
+
+    /* ══════════════════════════════════════════════
+       HOME SCREEN — Responsive layout
+    ══════════════════════════════════════════════ */
+
+    /* Desktop: 2-column layout for home screen */
+    @media (min-width: 1024px) {
+      #home-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto 1fr auto;
+        gap: 1.5rem;
+        align-items: start;
+        max-width: 1100px;
+        width: 100%;
+      }
+      #home-title-block  { grid-column: 1 / -1; }
+      #home-main-card    { grid-column: 1; grid-row: 2; }
+      #home-right-col    { grid-column: 2; grid-row: 2; display: flex; flex-direction: column; gap: 1.25rem; }
+      #home-rules-block  { grid-column: 1 / -1; grid-row: 3; }
+    }
+
+    /* ══════════════════════════════════════════════
+       DRAWER SYSTEM
+    ══════════════════════════════════════════════ */
+    .drawer-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 45;
+      background: rgba(0,0,0,.65);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+    .drawer-backdrop.open { display: block; }
+
+    /* Left drawer — mobile */
+    #drawer-left {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: 288px;
+      z-index: 50;
+      background: #1a1c19;
+      border-right: 1px solid rgba(153,144,124,.25);
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1.25rem;
+      padding-top: calc(1.25rem + env(safe-area-inset-top));
+      padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+    }
+    #drawer-left.open { transform: translateX(0); }
+
+    /* Right drawer — mobile */
+    #drawer-right {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: min(320px, 92vw);
+      z-index: 50;
+      background: #1a1c19;
+      border-left: 1px solid rgba(153,144,124,.25);
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      flex-direction: column;
+    }
+    #drawer-right.open { transform: translateX(0); }
+
+    /* ── Desktop: drawers become static sidebars ── */
+    @media (min-width: 1024px) {
+      #drawer-left, #drawer-right {
+        position: static;
+        transform: none !important;
+        width: auto;
+        border: none;
+        background: transparent;
+        padding: 0;
+        display: flex;
+        transition: none;
+        overflow-y: visible;
+      }
+      .drawer-backdrop { display: none !important; }
+      #btn-toggle-left, #btn-toggle-right { display: none !important; }
+    }
+
+    /* ══════════════════════════════════════════════
+       LOBBY LAYOUT — 3-column grid on desktop
+    ══════════════════════════════════════════════ */
+    #lobby-columns {
+      display: flex;
+      flex: 1;
+      gap: 0;
+      overflow: hidden;
+      min-height: calc(100dvh - var(--header-height));
+      align-items: stretch;
+    }
+
+    /* Left column */
+    #drawer-left.sidebar-left {
+      width: var(--sidebar-left-width);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+      padding: var(--gap);
+      background: rgba(26,28,25,.6);
+      border-right: 1px solid rgba(153,144,124,.18);
+      overflow-y: auto;
+    }
+
+    /* Right column */
+    #drawer-right.sidebar-right {
+      width: var(--sidebar-right-width);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: rgba(26,28,25,.6);
+      border-left: 1px solid rgba(153,144,124,.18);
+    }
+
+    /* Center column */
+    #lobby-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+      padding: var(--gap);
+      overflow-y: auto;
+      min-width: 0;
+    }
+
+    /* Mobile: proper padding and compact mode display */
+    @media (max-width: 1023px) {
+      #lobby-center {
+        padding: 0.625rem;
+        gap: 0.625rem;
+        height: calc(100dvh - var(--header-height));
+      }
+      #current-mode-display {
+        font-size: 0.68rem;
+        padding: 0.4rem 0.65rem;
+        line-height: 1.4;
+        flex-shrink: 0;
+      }
+    }
+
+    /* ── Ingame players grid — responsive ── */
+    #ingame-players {
+      display: grid;
+      gap: .75rem;
+      grid-template-columns: repeat(2, 1fr);
+    }
+    @media (min-width: 640px) {
+      #ingame-players { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      #ingame-players { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1280px) {
+      #ingame-players { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* ── Elements grid — horizontal scroll on mobile, grid on wider screens ── */
+    #elements-grid {
+      display: flex;
+      gap: .5rem;
+      overflow-x: auto;
+      overflow-y: visible;
+      padding-bottom: 6px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    #elements-grid::-webkit-scrollbar { display: none; }
+    #elements-grid .elem-btn {
+      flex: 0 0 calc((100% - 3 * .5rem) / 4);
+      min-width: 64px;
+      min-height: 80px;
+      scroll-snap-align: start;
+      touch-action: manipulation;
+    }
+    @media (min-width: 480px) {
+      #elements-grid {
+        display: grid;
+        overflow: visible;
+        gap: .5rem;
+        grid-template-columns: repeat(7, 1fr);
+        padding-bottom: 0;
+      }
+      #elements-grid .elem-btn {
+        flex: none;
+        min-width: unset;
+      }
+    }
+
+    /* ── Header height compensation ── */
+    @media (max-width: 1023px) {
+      #drawer-right .chat-input-area {
+        padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+      }
+      /* Push chat above virtual keyboard using dvh */
+      #drawer-right {
+        height: 100dvh;
+        max-height: 100dvh;
+      }
+    }
+
+    /* ── Chat unread badge ── */
+    #chat-unread-dot {
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #f2ca50;
+    }
+
+    /* ── Result banner ── */
+    #result-banner { transition: all .3s ease; }
+
+    /* ── Waiting screen ornament ── */
+    .orbit-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(242,202,80,.12);
+    }
+
+    /* ── Safe area ── */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+    }
+
+    /* ── VS Overlay ── */
+    #vs-overlay {
+      transition: opacity .4s ease;
+    }
+    #vs-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── VS overlay responsive fixes ── */
+    @media (max-width: 479px) {
+      #vs-round-label { font-size: 1rem; margin-bottom: 1.25rem; letter-spacing: .15em; }
+      #vs-p1-name, #vs-p2-name { font-size: .9rem; }
+      #vs-overlay .text-3xl { font-size: 1.75rem; }
+    }
+
+    /* ── Cup match popup — bottom banner on mobile, corner on desktop ── */
+    #cup-match-popup {
+      /* Mobile default: bottom fluid banner */
+      left: 12px !important;
+      right: 12px !important;
+      bottom: calc(env(safe-area-inset-bottom) + 16px) !important;
+      top: auto !important;
+      width: auto !important;
+    }
+    @media (min-width: 640px) {
+      #cup-match-popup {
+        top: 70px !important;
+        right: 16px !important;
+        bottom: auto !important;
+        left: auto !important;
+        width: 260px !important;
+      }
+    }
+    @media (min-width: 1024px) {
+      #cup-match-popup {
+        top: calc(var(--header-height) + 12px) !important;
+        right: calc(var(--sidebar-right-width) + 16px) !important;
+        bottom: auto !important;
+        left: auto !important;
+        width: 260px !important;
+      }
+    }
+
+    /* ── Swipe hint for element grid ── */
+    .elem-grid-wrap { position: relative; }
+    .elem-swipe-hint {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9px;
+      color: rgba(153,144,124,.5);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-top: 4px;
+      justify-content: center;
+    }
+    @media (min-width: 480px) {
+      .elem-swipe-hint { display: none; }
+    }
+
+    /* ── Info modal scrollbar ── */
+    #info-modal .overflow-y-auto::-webkit-scrollbar { width: 4px; }
+    #info-modal .overflow-y-auto::-webkit-scrollbar-thumb { background: rgba(153,144,124,.3); border-radius: 2px; }
+
+    /* ── Kick modal ── */
+    #kick-modal .animate-pop-in { animation: popIn .25s ease-out forwards; }
+
+    /* ── Home page elements showcase ── */
+    #elements-showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: .5rem;
+      text-align: center;
+    }
+
+    /* Rules grid — desktop gets more columns */
+    #rules-grid {
+      display: grid;
+      gap: .75rem;
+      grid-template-columns: repeat(1, 1fr);
+    }
+    @media (min-width: 640px) {
+      #rules-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      #rules-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    /* ── Tooltip for lobby ID on desktop ── */
+    .tooltip {
+      position: relative;
+    }
+    .tooltip:hover::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e201d;
+      border: 1px solid rgba(153,144,124,.3);
+      color: #d0c5af;
+      font-size: .7rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* ── Mode select arrow ── */
+    .mode-select-wrap {
+      position: relative;
+    }
+    .mode-select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #f2ca50;
+      pointer-events: none;
+      font-size: .85rem;
+    }
+
+    /* ── Smooth transitions for screens ── */
+    .screen { transition: opacity .2s ease; }
+
+    /* ── Status bar flex wrap on small ── */
+    @media (max-width: 379px) {
+      #game-status-bar { flex-wrap: wrap; gap: .75rem; }
+      #game-status-bar > * { flex: 1 1 45%; }
+    }
   </style>
 </head>
 
@@ -242,6 +671,27 @@
         class="px-5 py-3 rounded font-display text-sm tracking-widest bg-secondary-container text-secondary font-bold hover:brightness-110 active:scale-95 transition-all border border-secondary/40">
         Join
       </button>
+
+      <div class="flex items-center gap-3">
+        <div class="flex-1 h-px bg-outline-variant"></div>
+        <span class="text-on-surface-variant text-xs tracking-widest">atau</span>
+        <div class="flex-1 h-px bg-outline-variant"></div>
+      </div>
+
+      <div class="flex gap-2">
+        <input id="input-lobby-id" type="text" placeholder="Masukkan Lobby ID..."
+          class="flex-1 bg-surface-container-lowest border border-outline rounded-lg px-4 py-3 text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all text-sm" />
+        <button onclick="joinLobbyById()"
+          class="px-5 py-3 rounded-lg font-display text-sm tracking-widest bg-secondary-container text-secondary font-bold hover:brightness-110 active:scale-95 transition-all border border-secondary/40">
+          Join
+        </button>
+      </div>
+
+      <button onclick="loadLobbies()"
+        class="w-full py-2.5 rounded-lg border border-outline text-on-surface-variant text-xs hover:border-primary hover:text-primary transition-all tracking-widest uppercase">
+        🔍 Lihat Lobby Tersedia
+      </button>
+      <div id="lobby-list" class="flex flex-col gap-2 max-h-52 overflow-y-auto"></div>
     </div>
 
     <button onclick="loadLobbies()"
@@ -251,7 +701,40 @@
     <div id="lobby-list" class="flex flex-col gap-2 max-h-52 overflow-y-auto"></div>
   </div>
 
-  <div id="home-error" class="text-error text-sm hidden"></div>
+      <!-- Elements showcase -->
+      <div class="glass rounded-xl p-4 sm:p-5 bronze-frame w-full">
+        <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-3 font-semibold text-center">7 Elemen Alkimia</div>
+        <div id="elements-showcase-grid">
+          <div class="flex flex-col items-center gap-1">
+            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:0s">🪨</div>
+            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Rock</div>
+          </div>
+          <div class="flex flex-col items-center gap-1">
+            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:.15s">🔥</div>
+            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Fire</div>
+          </div>
+          <div class="flex flex-col items-center gap-1">
+            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:.3s">✂️</div>
+            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Scissors</div>
+          </div>
+          <div class="flex flex-col items-center gap-1">
+            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:.45s">🧽</div>
+            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Sponge</div>
+          </div>
+          <div class="flex flex-col items-center gap-1">
+            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:.6s">📄</div>
+            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Paper</div>
+          </div>
+          <div class="flex flex-col items-center gap-1">
+            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:.75s">💨</div>
+            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Air</div>
+          </div>
+          <div class="flex flex-col items-center gap-1">
+            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:.9s">💧</div>
+            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Water</div>
+          </div>
+        </div>
+      </div>
 
   <div class="glass rounded-lg p-5 w-full max-w-md bronze-frame">
     <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-3 font-semibold text-center">7 Alchemy Elements</div>
@@ -297,7 +780,45 @@
         <div class="text-sm text-on-surface-variant">beats <span class="text-on-surface-variant">Rock</span>, <span class="text-error">Fire</span>, <span class="text-on-surface">Scissors</span></div>
       </div>
     </div>
-  </section>
+
+    <div id="home-error" class="text-error text-sm hidden w-full max-w-md text-center"></div>
+
+    <!-- Rules block — full width -->
+    <section id="home-rules-block" class="w-full max-w-5xl p-4 sm:p-6 glass bronze-frame rounded-xl">
+      <h2 class="text-xl sm:text-2xl xl:text-3xl font-display font-bold text-primary mb-4 sm:mb-6 text-center tracking-wide">📖 Aturan Penaklukan</h2>
+      <div id="rules-grid">
+        <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-outline transition-colors">
+          <div class="text-lg mb-1 font-bold text-on-surface">🪨 Batu</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-error font-medium">Api</span>, <span class="text-on-surface font-medium">Gunting</span>, <span class="text-primary font-medium">Spons</span></div>
+        </div>
+        <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-primary/50 transition-colors">
+          <div class="text-lg mb-1 font-bold text-on-surface">🔥 Api</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-on-surface font-medium">Gunting</span>, <span class="text-primary font-medium">Spons</span>, <span class="text-secondary font-medium">Kertas</span></div>
+        </div>
+        <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-outline transition-colors">
+          <div class="text-lg mb-1 font-bold text-on-surface">✂️ Gunting</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-primary font-medium">Spons</span>, <span class="text-secondary font-medium">Kertas</span>, <span class="text-tertiary font-medium">Udara</span></div>
+        </div>
+        <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-primary/50 transition-colors">
+          <div class="text-lg mb-1 font-bold text-on-surface">🧽 Spons</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-secondary font-medium">Kertas</span>, <span class="text-tertiary font-medium">Udara</span>, <span class="text-secondary-fixed-dim font-medium">Air</span></div>
+        </div>
+        <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-secondary/50 transition-colors">
+          <div class="text-lg mb-1 font-bold text-on-surface">📄 Kertas</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-tertiary font-medium">Udara</span>, <span class="text-secondary-fixed-dim font-medium">Air</span>, <span class="text-on-surface-variant font-medium">Batu</span></div>
+        </div>
+        <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-tertiary/50 transition-colors">
+          <div class="text-lg mb-1 font-bold text-on-surface">💨 Udara</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-secondary-fixed-dim font-medium">Air</span>, <span class="text-on-surface-variant font-medium">Batu</span>, <span class="text-error font-medium">Api</span></div>
+        </div>
+        <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-secondary-fixed-dim/50 transition-colors">
+          <div class="text-lg mb-1 font-bold text-on-surface">💧 Air</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-on-surface-variant font-medium">Batu</span>, <span class="text-error font-medium">Api</span>, <span class="text-on-surface font-medium">Gunting</span></div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- end home-layout -->
 </div>
 
 <div id="screen-lobby" class="screen flex-col min-h-screen">
@@ -326,20 +847,28 @@
           <div class="w-2 h-2 rounded-full bg-tertiary live-dot"></div>
           <span class="text-xs text-on-surface-variant" id="lobby-player-count">0 Players</span>
         </div>
-        <div class="flex items-center gap-2 ml-2">
-          <span class="text-xs text-on-surface-variant font-mono" id="lobby-id-display"></span>
+
+        <!-- Lobby ID display -->
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5 bg-surface-container-lowest px-3 py-1.5 rounded-lg border border-outline">
+            <span class="text-xs text-on-surface-variant">ID:</span>
+            <span class="text-xs text-primary font-mono font-semibold tracking-wider" id="lobby-id-display"></span>
+          </div>
           <button id="btn-copy-id" onclick="copyLobbyId()"
-            class="flex items-center gap-1 px-2 py-0.5 rounded border border-outline text-on-surface-variant text-xs hover:border-primary hover:text-primary transition-all active:scale-95">
+            class="tooltip flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-outline text-on-surface-variant text-xs hover:border-primary hover:text-primary transition-all active:scale-95"
+            data-tip="Salin ID ke clipboard">
             <span id="copy-icon">📋</span>
-            <span id="copy-label">Copy ID</span>
+            <span id="copy-label" class="hidden xl:inline">Copy</span>
           </button>
         </div>
+
         <button onclick="leaveLobby()"
           class="px-3 py-1.5 rounded border border-error/40 text-error text-xs hover:bg-error-container/30 transition-all ml-1">
           Leave
         </button>
       </div>
     </div>
+
   </header>
 
   <div class="flex flex-1 gap-0 overflow-hidden" style="min-height: calc(100vh - 64px);">
@@ -372,7 +901,7 @@
             </select>
           </div>
         </div>
-        <div id="mode-info-badge" class="mb-3 rounded px-3 py-2 bg-surface-container border border-outline-variant text-xs text-on-surface-variant"></div>
+        <div id="mode-info-badge" class="mb-3 rounded-lg px-3 py-2 bg-surface-container border border-outline-variant text-xs text-on-surface-variant leading-relaxed"></div>
         <button id="btn-start" onclick="startGame()"
           class="w-full py-3 rounded font-display text-base tracking-wider bg-primary text-on-primary font-bold hover:brightness-110 active:scale-95 transition-all glow-gold uppercase">
           ▶ Start Game
@@ -422,9 +951,9 @@
         <div class="glass bronze-frame rounded-lg p-4 flex items-center justify-between relative corner-tl corner-tr">
           <div>
             <div class="text-xs text-on-surface-variant uppercase tracking-widest">Status</div>
-            <div id="phase-label" class="font-display text-xl text-primary text-glow-gold">—</div>
+            <div id="phase-label" class="font-display text-lg sm:text-xl text-primary text-glow-gold truncate">—</div>
           </div>
-          <div class="timer-ring">
+          <div class="timer-ring flex-shrink-0">
             <svg width="72" height="72" viewBox="0 0 72 72">
               <circle cx="36" cy="36" r="32" stroke="rgba(153,144,124,.15)" stroke-width="4" fill="none"/>
               <circle id="timerPath" cx="36" cy="36" r="32"/>
@@ -459,7 +988,7 @@
         <div class="font-display text-3xl text-primary text-glow-gold" id="game-over-title">FINISHED</div>
         <div class="text-on-surface text-lg" id="game-over-winner"></div>
         <div id="final-scoreboard" class="w-full max-w-sm"></div>
-        <div class="flex gap-4 mt-2">
+        <div class="flex flex-wrap gap-3 justify-center mt-2">
           <button onclick="goHome()"
             class="px-6 py-3 rounded border border-outline text-on-surface-variant hover:text-on-surface hover:border-outline-variant transition-all font-display text-sm uppercase tracking-wider">
             ← Leave Lobby
@@ -489,13 +1018,14 @@
         <div class="flex gap-2">
           <input id="chat-input" type="text" maxlength="300" placeholder="Inscribe message..."
             onkeydown="if(event.key==='Enter')sendChat()"
-            class="flex-1 bg-surface-dim border border-outline rounded px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary transition-all" />
+            class="flex-1 bg-surface-dim border border-outline rounded-lg px-4 py-3 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary transition-all min-w-0" style="min-height:44px;font-size:16px;" />
           <button onclick="sendChat()"
-            class="px-4 py-2.5 rounded bg-primary/20 border border-primary/40 text-primary text-sm hover:bg-primary/30 transition-all">
-            <span class="font-bold">↑</span>
+            class="w-11 h-11 flex items-center justify-center rounded-lg bg-primary/20 border border-primary/40 text-primary hover:bg-primary/30 active:scale-95 transition-all flex-shrink-0">
+            <span class="font-bold text-base">↑</span>
           </button>
         </div>
       </div>
+
     </aside>
 
   </div>
@@ -549,7 +1079,7 @@
     <div id="cup-popup-fighters" class="flex items-center justify-center gap-4"></div>
   </div>
   <div class="w-full bg-surface-container-highest h-0.5">
-    <div id="cup-popup-bar" class="h-full bg-primary" style="width:100%"></div>
+    <div id="cup-popup-bar" class="h-full bg-primary transition-all duration-1000" style="width:100%"></div>
   </div>
 </div>
 
@@ -561,10 +1091,10 @@
         <div id="vs-p1-avatar" class="text-6xl md:text-8xl mb-4 bg-surface-container w-24 h-24 md:w-32 md:h-32 rounded border-2 border-primary flex items-center justify-center glow-gold">👤</div>
         <div id="vs-p1-name" class="font-display text-lg md:text-2xl text-primary truncate w-full text-glow-gold">Player 1</div>
       </div>
-      <div class="text-5xl md:text-7xl font-black italic text-error animate-pulse font-display">VS</div>
-      <div class="flex flex-col items-center w-1/3">
-        <div id="vs-p2-avatar" class="text-6xl md:text-8xl mb-4 bg-surface-container w-24 h-24 md:w-32 md:h-32 rounded border-2 border-tertiary flex items-center justify-center">👤</div>
-        <div id="vs-p2-name" class="font-display text-lg md:text-2xl text-on-surface truncate w-full">Player 2</div>
+      <div class="text-2xl sm:text-5xl xl:text-7xl font-black italic text-error animate-pulse font-display flex-shrink-0">VS</div>
+      <div class="flex flex-col items-center w-5/12 sm:w-1/3 min-w-0">
+        <div id="vs-p2-avatar" class="text-3xl sm:text-6xl xl:text-7xl mb-2 sm:mb-3 bg-surface-container w-16 h-16 sm:w-28 sm:h-28 xl:w-36 xl:h-36 rounded-xl border-2 border-tertiary flex items-center justify-center flex-shrink-0">👤</div>
+        <div id="vs-p2-name" class="font-display text-sm sm:text-xl xl:text-2xl text-on-surface truncate w-full text-center max-w-[120px] sm:max-w-none">Player 2</div>
       </div>
     </div>
   </div>
@@ -577,13 +1107,13 @@
 
     <div class="flex items-center justify-between px-6 py-4 border-b border-outline-variant flex-shrink-0" style="background:linear-gradient(90deg,rgba(242,202,80,.06) 0%,transparent 60%)">
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded bg-primary/15 border border-primary/30 flex items-center justify-center text-lg">📖</div>
+        <div class="w-8 h-8 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center text-lg flex-shrink-0">📖</div>
         <div>
           <div class="font-display text-lg text-primary uppercase tracking-widest leading-none">How to Play</div>
           <div class="text-xs text-on-surface-variant mt-0.5 tracking-wider">A Conqueror of the Seven Hand Game — Alchemy Guide</div>
         </div>
       </div>
-      <button onclick="closeGameInfo()" class="w-8 h-8 flex items-center justify-center rounded border border-outline text-on-surface-variant hover:text-primary hover:border-primary transition-all text-lg leading-none">✕</button>
+      <button onclick="closeGameInfo()" class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline text-on-surface-variant hover:text-primary hover:border-primary transition-all text-lg leading-none flex-shrink-0 active:scale-90">✕</button>
     </div>
 
     <div class="flex border-b border-outline-variant flex-shrink-0 bg-surface-container/50">
@@ -644,21 +1174,21 @@
               <div class="text-xs text-on-surface-variant">Each round has a timer. If you don't choose, your last element is used (or random if you haven't chosen yet).</div>
             </div>
           </div>
-          <div class="bg-surface-container rounded p-3 border border-outline-variant flex gap-3">
+          <div class="bg-surface-container rounded-xl p-3 border border-outline-variant flex gap-3">
             <span class="text-2xl flex-shrink-0">🤖</span>
             <div>
               <div class="text-xs text-primary font-semibold uppercase tracking-wider mb-0.5">Auto Bots</div>
               <div class="text-xs text-on-surface-variant">If playing solo, bots automatically fill empty slots when game starts.</div>
             </div>
           </div>
-          <div class="bg-surface-container rounded p-3 border border-outline-variant flex gap-3">
+          <div class="bg-surface-container rounded-xl p-3 border border-outline-variant flex gap-3">
             <span class="text-2xl flex-shrink-0">🤝</span>
             <div>
               <div class="text-xs text-primary font-semibold uppercase tracking-wider mb-0.5">Draw</div>
               <div class="text-xs text-on-surface-variant">If both players choose the same element, the round is a draw. No points/HP change.</div>
             </div>
           </div>
-          <div class="bg-surface-container rounded p-3 border border-outline-variant flex gap-3">
+          <div class="bg-surface-container rounded-xl p-3 border border-outline-variant flex gap-3">
             <span class="text-2xl flex-shrink-0">👁</span>
             <div>
               <div class="text-xs text-primary font-semibold uppercase tracking-wider mb-0.5">Spectator</div>
@@ -677,8 +1207,8 @@
           <div id="elem-detail-header" class="p-4 flex items-center gap-4" style="background:rgba(242,202,80,.06)">
             <div id="elem-detail-icon" class="text-5xl w-16 h-16 flex items-center justify-center rounded bg-surface-container border border-outline"></div>
             <div>
-              <div id="elem-detail-name" class="font-display text-2xl text-primary text-glow-gold"></div>
-              <div id="elem-detail-desc" class="text-xs text-on-surface-variant mt-1 max-w-xs"></div>
+              <div id="elem-detail-name" class="font-display text-xl sm:text-2xl text-primary text-glow-gold"></div>
+              <div id="elem-detail-desc" class="text-xs text-on-surface-variant mt-1 max-w-xs leading-relaxed"></div>
             </div>
           </div>
           <div class="p-4 grid grid-cols-2 gap-4">
@@ -726,7 +1256,7 @@
               <div class="font-display text-base text-error uppercase tracking-widest">Lives Elimination</div>
               <div class="text-xs text-on-surface-variant">Survival · 1v1 + Bot</div>
             </div>
-            <span class="ml-auto px-2 py-0.5 rounded text-xs bg-error/10 border border-error/30 text-error uppercase tracking-wider">Survival</span>
+            <span class="ml-auto px-2 py-0.5 rounded-lg text-xs bg-error/10 border border-error/30 text-error uppercase tracking-wider flex-shrink-0">Survival</span>
           </div>
           <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
             <div class="flex gap-2"><span class="text-error">▸</span><span class="text-on-surface-variant">Each player starts with <strong class="text-on-surface">3 HP</strong></span></div>
@@ -742,7 +1272,7 @@
               <div class="font-display text-base text-primary uppercase tracking-widest">Cup Mode</div>
               <div class="text-xs text-on-surface-variant">8-Slot Tournament Bracket</div>
             </div>
-            <span class="ml-auto px-2 py-0.5 rounded text-xs bg-primary/20 border border-primary/40 text-primary uppercase tracking-wider glow-gold">Premium</span>
+            <span class="ml-auto px-2 py-0.5 rounded-lg text-xs bg-primary/20 border border-primary/40 text-primary uppercase tracking-wider glow-gold flex-shrink-0">Premium</span>
           </div>
           <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
             <div class="flex gap-2"><span class="text-primary">▸</span><span class="text-on-surface-variant">Max <strong class="text-on-surface">8 players</strong> per session</span></div>
@@ -784,15 +1314,11 @@
 </div>
 
 <style>
-  /* Info modal tab active state */
-  .info-tab-btn.active-tab {
-    color: #f2ca50;
-    border-bottom-color: #f2ca50;
-  }
-  /* Elem selector pill */
+  .info-tab-btn.active-tab { color:#f2ca50;border-bottom-color:#f2ca50; }
+
   .elem-pill {
     display:flex;flex-direction:column;align-items:center;gap:4px;
-    padding:8px 4px;border-radius:8px;border:1px solid #4d4635;
+    padding:8px 4px;border-radius:10px;border:1px solid #4d4635;
     background:rgba(30,32,29,.7);cursor:pointer;transition:all .2s;
     font-size:10px;color:#d0c5af;letter-spacing:.06em;text-transform:uppercase;
   }
@@ -800,16 +1326,15 @@
   .elem-pill.active { border-color:#f2ca50;background:rgba(242,202,80,.15);color:#f2ca50;box-shadow:0 0 12px rgba(242,202,80,.35); }
   .elem-pill .pill-icon { font-size:22px;line-height:1; }
 
-  /* Beats / loses rows */
   .beat-row, .lose-row {
     display:flex;align-items:center;gap:8px;
-    padding:4px 8px;border-radius:6px;font-size:12px;
+    padding:5px 10px;border-radius:8px;font-size:12px;
   }
   .beat-row { background:rgba(177,214,202,.08);border:1px solid rgba(177,214,202,.2);color:#b1d6ca; }
   .lose-row { background:rgba(255,180,171,.08);border:1px solid rgba(255,180,171,.2);color:#ffb4ab; }
   .reason-row {
     display:flex;align-items:baseline;gap:6px;font-size:11px;color:#d0c5af;
-    padding:3px 0;border-bottom:1px solid rgba(77,70,53,.4);
+    padding:4px 0;border-bottom:1px solid rgba(77,70,53,.4);
   }
   .reason-row:last-child { border-bottom:none; }
   .reason-arrow { color:#f2ca50;font-weight:bold;flex-shrink:0; }
@@ -897,6 +1422,34 @@
     },
   ];
 
+  function closeAllDrawers() {
+    document.getElementById('drawer-left')?.classList.remove('open');
+    document.getElementById('drawer-right')?.classList.remove('open');
+    document.getElementById('drawer-backdrop')?.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  /* Unread dot observer */
+  const _chatObserver = new MutationObserver(() => {
+    const rightDrawer = document.getElementById('drawer-right');
+    const dot = document.getElementById('chat-unread-dot');
+    if (dot && rightDrawer && !rightDrawer.classList.contains('open') && window.innerWidth < 1024) {
+      dot.classList.remove('hidden');
+    }
+  });
+  const chatBox = document.getElementById('chat-box');
+  if (chatBox) _chatObserver.observe(chatBox, { childList: true });
+
+  /* ─── Game Info Modal ────────────────────────────── */
+  // const ELEM_DATA = [
+  //   { name:"Rock",    icon:"🪨", color:"#94a3b8", desc:"Batu purba yang kokoh — simbol ketahanan dan kekuatan mentah.", beats:["Fire","Scissors","Sponge"], loses:["Paper","Air","Water"], reasons:{"Fire":"Batu memadamkan Api dengan menghancurkan bara.","Scissors":"Batu menghancurkan Gunting dengan kekerasannya.","Sponge":"Batu meremukkan Spons secara fisik."} },
+  //   { name:"Fire",    icon:"🔥", color:"#f97316", desc:"Api alkimia yang membakar segala yang lunak dan tajam.", beats:["Scissors","Sponge","Paper"], loses:["Rock","Air","Water"], reasons:{"Scissors":"Api melelehkan logam Gunting.","Sponge":"Api membakar Spons habis-habisan.","Paper":"Api menghanguskan Kertas seketika."} },
+  //   { name:"Scissors",icon:"✂️", color:"#e2e8f0", desc:"Gunting tajam yang memotong segala yang lembut dan ringan.", beats:["Sponge","Paper","Air"], loses:["Rock","Fire","Water"], reasons:{"Sponge":"Gunting memotong Spons menjadi potongan kecil.","Paper":"Gunting memotong Kertas dengan mudah.","Air":"Gunting memotong arus Udara, membelah alirannya."} },
+  //   { name:"Sponge",  icon:"🧽", color:"#f2ca50", desc:"Spons menyerap semua — hanya dilemahkan oleh yang lebih keras.", beats:["Paper","Air","Water"], loses:["Rock","Fire","Scissors"], reasons:{"Paper":"Spons menyerap tinta dan merusak Kertas.","Air":"Spons menangkap Udara dan memadatkannya.","Water":"Spons menyerap Air sepenuhnya."} },
+  //   { name:"Paper",   icon:"📄", color:"#38bdf8", desc:"Kertas — lambang pengetahuan yang mengikat bahkan batu sekalipun.", beats:["Air","Water","Rock"], loses:["Fire","Scissors","Sponge"], reasons:{"Air":"Kertas membungkus dan mengikat Udara.","Water":"Kertas menyerap Air dan mendistorsi alirannya.","Rock":"Kertas membungkus Batu — simbol penguasaan."} },
+  //   { name:"Air",     icon:"💨", color:"#a78bfa", desc:"Udara tak terlihat namun melingkupi segalanya.", beats:["Water","Rock","Fire"], loses:["Scissors","Sponge","Paper"], reasons:{"Water":"Udara menguapkan Air menjadi uap.","Rock":"Udara mengikis Batu perlahan namun pasti.","Fire":"Udara memadamkan Api (tanpa bahan bakar)."} },
+  //   { name:"Water",   icon:"💧", color:"#06b6d4", desc:"Air mengalir menembus segala rintangan — pembasmi api dan logam.", beats:["Rock","Fire","Scissors"], loses:["Sponge","Paper","Air"], reasons:{"Rock":"Air mengikis dan melubangi Batu seiring waktu.","Fire":"Air memadamkan Api secara langsung.","Scissors":"Air berkarat dan melemahkan logam Gunting."} },
+  // ];
   const ELEM_MAP = Object.fromEntries(ELEM_DATA.map(e => [e.name, e]));
 
   function openGameInfo() {
@@ -904,54 +1457,43 @@
     document.body.style.overflow = 'hidden';
     buildElemSelectorGrid();
   }
-
   function closeGameInfo() {
     document.getElementById('info-modal').classList.add('hidden');
     document.body.style.overflow = '';
   }
-
   function switchInfoTab(tab) {
     document.querySelectorAll('.info-tab').forEach(t => t.classList.add('hidden'));
     document.getElementById('tab-' + tab).classList.remove('hidden');
     document.querySelectorAll('.info-tab-btn').forEach(b => b.classList.remove('active-tab'));
     document.getElementById('tab-btn-' + tab).classList.add('active-tab');
   }
-
   function buildElemSelectorGrid() {
     const grid = document.getElementById('elem-selector-grid');
-    if (grid.innerHTML) return; // already built
-    grid.innerHTML = ELEM_DATA.map((e, i) => `
+    if (grid.innerHTML) return;
+    grid.innerHTML = ELEM_DATA.map(e => `
       <button class="elem-pill" onclick="showElemDetail('${e.name}')" id="pill-${e.name}">
         <span class="pill-icon">${e.icon}</span>
         <span>${e.name}</span>
       </button>
     `).join('');
   }
-
   function showElemDetail(name) {
     const e = ELEM_MAP[name];
     if (!e) return;
-
-    // active pill
     document.querySelectorAll('.elem-pill').forEach(p => p.classList.remove('active'));
     document.getElementById('pill-' + name)?.classList.add('active');
-
     document.getElementById('elem-detail-icon').textContent = e.icon;
     document.getElementById('elem-detail-name').textContent = e.name;
     document.getElementById('elem-detail-desc').textContent = e.desc;
-
     document.getElementById('elem-beats').innerHTML = e.beats.map(b =>
-      `<div class="beat-row"><span>${ELEM_MAP[b]?.icon || ''}</span><span>${b}</span></div>`
+      `<div class="beat-row"><span>${ELEM_MAP[b]?.icon||''}</span><span>${b}</span></div>`
     ).join('');
-
     document.getElementById('elem-loses').innerHTML = e.loses.map(l =>
-      `<div class="lose-row"><span>${ELEM_MAP[l]?.icon || ''}</span><span>${l}</span></div>`
+      `<div class="lose-row"><span>${ELEM_MAP[l]?.icon||''}</span><span>${l}</span></div>`
     ).join('');
-
     document.getElementById('elem-reasons').innerHTML = e.beats.map(b =>
-      `<div class="reason-row"><span class="reason-arrow">${e.icon} › ${ELEM_MAP[b]?.icon}</span><span>${e.reasons[b] || ''}</span></div>`
+      `<div class="reason-row"><span class="reason-arrow">${e.icon} › ${ELEM_MAP[b]?.icon}</span><span>${e.reasons[b]||''}</span></div>`
     ).join('');
-
     const card = document.getElementById('elem-detail-card');
     card.style.display = 'block';
     card.style.borderColor = e.color + '55';
@@ -961,10 +1503,15 @@
   window.closeGameInfo = closeGameInfo;
   window.switchInfoTab = switchInfoTab;
   window.showElemDetail = showElemDetail;
+  window.toggleDrawer = toggleDrawer;
+  window.closeAllDrawers = closeAllDrawers;
 
-  // Keyboard: Escape to close
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeGameInfo();
+    if (e.key === 'Escape') { closeGameInfo(); closeAllDrawers(); }
+  });
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1024) closeAllDrawers();
   });
 </script>
+</body>
 </html>
