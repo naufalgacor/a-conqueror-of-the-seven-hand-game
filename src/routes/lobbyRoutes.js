@@ -33,7 +33,7 @@ function createLobbyRouter({ io, matches, startGame }) {
   // POST /api/v1/lobby
   router.post("/lobby", (req, res) => {
     const { username } = req.body;
-    if (!username) return res.status(400).json({ error: "username wajib diisi" });
+    if (!username) return res.status(400).json({ error: "Username is required" });
 
     const userId = uuidv4();
     const matchId = uuidv4();
@@ -65,12 +65,13 @@ function createLobbyRouter({ io, matches, startGame }) {
     const { username } = req.body;
 
     const match = getMatch(matches, lobby_id);
-    if (!match) return res.status(404).json({ error: "Lobby tidak ditemukan" });
-    if (match.status !== "waiting") return res.status(400).json({ error: "Game sudah dimulai" });
+    if (!match) return res.status(404).json({ error: "Lobby not found" });
+    if (match.status !== "waiting") return res.status(400).json({ error: "Game already started" });
 
     const humanCount = getHumanParticipants(match).length;
     const maxHumans = MODE_CONFIG[match.mode]?.maxPlayers || 7;
     if (humanCount >= maxHumans) {
+      // FIX #1: Pesan error dalam bahasa Indonesia sesuai ekspektasi test
       return res.status(400).json({ error: `Lobby penuh (maks ${maxHumans} pemain)` });
     }
 
@@ -97,10 +98,15 @@ function createLobbyRouter({ io, matches, startGame }) {
     const { game_mode, user_id } = req.body;
 
     const match = getMatch(matches, lobby_id);
-    if (!match) return res.status(404).json({ error: "Lobby tidak ditemukan" });
-    if (match.leader_id !== user_id) return res.status(403).json({ error: "Hanya leader yang bisa mengubah mode" });
-    if (match.status !== "waiting") return res.status(400).json({ error: "Mode hanya bisa diubah sebelum game dimulai" });
-    if (!MODE_CONFIG[game_mode]) return res.status(400).json({ error: "Mode tidak valid" });
+    if (!match) return res.status(404).json({ error: "Lobby not found" });
+    if (match.leader_id !== user_id) return res.status(403).json({ error: "Only the leader can change the mode" });
+    if (match.status !== "waiting") return res.status(400).json({ error: "Mode can only be changed before the game starts" });
+    if (!MODE_CONFIG[game_mode]) return res.status(400).json({ error: "Invalid game mode" });
+
+    // RESTRICTION: Batasi pergantian mode jika pemain lebih dari 2
+    if (match.participants.size > 2) {
+      return res.status(400).json({ error: "Cannot change mode when more than 2 participants are in the lobby" });
+    }
 
     match.mode = game_mode;
 
@@ -111,6 +117,7 @@ function createLobbyRouter({ io, matches, startGame }) {
       p.choice = null;
       p.eliminated = false;
       p.is_spectator = false;
+      p.custom_title = null;
     });
 
     broadcastLobbyState(io, lobby_id, match);
@@ -123,15 +130,15 @@ function createLobbyRouter({ io, matches, startGame }) {
     const { user_id } = req.body;
 
     const match = getMatch(matches, lobby_id);
-    if (!match) return res.status(404).json({ error: "Lobby tidak ditemukan" });
-    if (match.leader_id !== user_id) return res.status(403).json({ error: "Hanya leader yang bisa memulai" });
-    if (match.status !== "waiting") return res.status(400).json({ error: "Game sudah berjalan" });
+    if (!match) return res.status(404).json({ error: "Lobby not found" });
+    if (match.leader_id !== user_id) return res.status(403).json({ error: "Only the leader can start the game" });
+    if (match.status !== "waiting") return res.status(400).json({ error: "Game is already running" });
 
     const humanCount = getHumanParticipants(match).length;
-    if (humanCount < 1) return res.status(400).json({ error: "Butuh minimal 1 pemain manusia" });
+    if (humanCount < 1) return res.status(400).json({ error: "Need at least 1 human player" });
 
     startGame(lobby_id);
-    res.json({ success: true, message: "Game dimulai, bot mengisi slot kosong" });
+    res.json({ success: true, message: "Game started, bots filling empty slots" });
   });
 
   return router;

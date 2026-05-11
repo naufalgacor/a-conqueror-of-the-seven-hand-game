@@ -33,10 +33,10 @@ function safeClearMatchTimers(match) {
 function registerLobbyHandlers({ io, socket, matches, users, gameService }) {
   socket.on("lobby:join", ({ match_id, user_id }) => {
     const match = getMatch(matches, match_id);
-    if (!match) return socket.emit("error", { message: "Lobby tidak ditemukan" });
+    if (!match) return socket.emit("error", { message: "Lobby not found" });
 
     const p = match.participants.get(user_id);
-    if (!p) return socket.emit("error", { message: "Pemain tidak terdaftar" });
+    if (!p) return socket.emit("error", { message: "Player not registered" });
 
     p.socket_id = socket.id;
     users.set(socket.id, { user_id, match_id });
@@ -153,12 +153,9 @@ function registerLobbyHandlers({ io, socket, matches, users, gameService }) {
       }
     }
 
-    // Eksekusi penghapusan
     match.participants.delete(target_id);
 
-    // JIKA GAME SEDANG BERJALAN: Paksa engine cek pemenang
     if (match.status !== "waiting" && match.status !== "finished") {
-        // Panggil fungsi pengecekan instan di gameService
         gameService.forceCheckState(match_id);
     }
 
@@ -183,6 +180,7 @@ function registerLobbyHandlers({ io, socket, matches, users, gameService }) {
       p.choice = null;
       p.eliminated = false;
       p.is_spectator = false;
+      p.custom_title = null; // PERBAIKAN: Reset gelar juara di sini!
     });
 
     io.to(match_id).emit("lobby:restarted");
@@ -213,7 +211,6 @@ function registerLobbyHandlers({ io, socket, matches, users, gameService }) {
         return;
       }
     } else {
-      // During a running game, treat disconnect as elimination into spectator
       p.eliminated = true;
       p.is_spectator = true;
     }

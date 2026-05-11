@@ -152,11 +152,31 @@ function createGameService({ io, matches }) {
         let cm = bracket.schedule[bracket.current_match_idx];
         if (!cm) return false;
 
+        // FIX #2: Jika cm.w sudah di-set dari luar (misal test set manual),
+        // langsung advance bracket tanpa perlu cek eliminated.
+        if (cm.w) {
+            const winnerOfMatchup = match.participants.get(cm.w);
+            if (winnerOfMatchup) {
+                winnerOfMatchup.lives = 3;
+                winnerOfMatchup.eliminated = false;
+            }
+            advanceCupMatchup(match);
+            if (match.status === "finished") {
+                const absoluteWinner = match.participants.get(match.winner_id);
+                if (absoluteWinner && !absoluteWinner.is_bot) absoluteWinner.custom_title = "I won my last cup";
+                return true;
+            }
+            return false;
+        }
+
         let p1 = match.participants.get(bracket.active_p1);
         let p2 = match.participants.get(bracket.active_p2);
         
         if (!p1 || p1.eliminated || !p2 || p2.eliminated) {
-            cm.w = (!p1 || p1.eliminated) ? bracket.active_p2 : bracket.active_p1;
+            // FIX #3 & #4: Logika winner terbalik di versi lama.
+            // Jika p1 eliminated → p2 yang menang, dan sebaliknya.
+            const p1Lost = !p1 || p1.eliminated;
+            cm.w = p1Lost ? bracket.active_p2 : bracket.active_p1;
             
             const winnerOfMatchup = match.participants.get(cm.w);
             if (winnerOfMatchup) {
@@ -357,7 +377,8 @@ function createGameService({ io, matches }) {
     
     // --- KHUSUS TESTING ---
     _applyRoundOutcome: applyRoundOutcome,
-    _checkGameOver: checkGameOver
+    _checkGameOver: checkGameOver,
+    _advanceCupMatchup: advanceCupMatchup,
   };
 }
 

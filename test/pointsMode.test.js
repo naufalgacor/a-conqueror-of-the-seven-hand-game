@@ -38,7 +38,7 @@ function createMatch(participants = [], round = 1) {
   };
 }
 
-describe('Pengujian Mode Rebutan Poin (Points Mode)', () => {
+describe('Testing Points Mode', () => {
   let matches; let match; let gameService;
   const cfg = MODE_CONFIG.points;
 
@@ -56,18 +56,18 @@ describe('Pengujian Mode Rebutan Poin (Points Mode)', () => {
     io.emit.mockClear();
   });
 
-  test('Penambahan Poin: hanya pemenang yang mendapat +1 poin', () => {
-    // p1 menang, b1 kalah
+  test('Point Addition: only winners get +1 point', () => {
+    // p1 wins, b1 loses
     gameService._applyRoundOutcome(match, ['p1'], ['b1'], false);
 
     expect(match.participants.get('p1').points).toBe(1);
     expect(match.participants.get('b1').points).toBe(0);
   });
 
-  test('Pencapaian Target Skor: pemain yang mencapai targetScore menjadi pemenang', () => {
-    // set p1 sudah mendekati target
-    match.participants.get('p1').points = cfg.targetScore - 1; // 3 jika target 4
-    // p1 menang sekali lagi
+  test('Target Score Achievement: player reaching targetScore becomes winner', () => {
+    // set p1 close to target
+    match.participants.get('p1').points = cfg.targetScore - 1; // 3 if target 4
+    // p1 wins again
     gameService._applyRoundOutcome(match, ['p1'], ['b1'], false);
 
     const over = gameService._checkGameOver(match);
@@ -75,11 +75,11 @@ describe('Pengujian Mode Rebutan Poin (Points Mode)', () => {
     expect(match.winner_id).toBe('p1');
   });
 
-  test('Batas Maksimal Ronde: game berakhir pada ronde maksimal dan pemimpin poin jadi pemenang', () => {
-    // set skor sehingga b1 unggul
+  test('Maximum Round Limit: game ends at maximum round and top scorer wins', () => {
+    // set scores so b1 leads
     match.participants.get('p1').points = 1;
     match.participants.get('b1').points = 3;
-    // capai ronde maksimal
+    // reach maximum round
     match.round = cfg.targetScore * 2 - 1;
 
     const over = gameService._checkGameOver(match);
@@ -87,19 +87,19 @@ describe('Pengujian Mode Rebutan Poin (Points Mode)', () => {
     expect(match.winner_id).toBe('b1');
   });
 
-  test('Prioritas Pemain Manusia (Tiebreaker) pada targetScore: manusia menang jika poin sama', () => {
-    // kedua pemain mencapai target secara bersamaan
+  test('Human Player Priority (Tiebreaker) at targetScore: human wins if points equal', () => {
+    // both players reach target simultaneously
     match.participants.get('p1').points = cfg.targetScore;
     match.participants.get('b1').points = cfg.targetScore;
 
     const over = gameService._checkGameOver(match);
     expect(over).toBe(true);
-    // human (p1) harus diprioritaskan terhadap bot
+    // human (p1) must be prioritized over bot
     expect(match.winner_id).toBe('p1');
   });
 
-  test('Prioritas Pemain Manusia (Tiebreaker) pada ronde maksimal: manusia menang jika skor seri', () => {
-    // keduanya imbang pada ronde maksimal
+  test('Human Player Priority (Tiebreaker) at maximum round: human wins if scores tied', () => {
+    // both tied at maximum round
     match.participants.get('p1').points = 2;
     match.participants.get('b1').points = 2;
     match.round = cfg.targetScore * 2 - 1;
@@ -109,8 +109,8 @@ describe('Pengujian Mode Rebutan Poin (Points Mode)', () => {
     expect(match.winner_id).toBe('p1');
   });
 
-  test('Entry limit (points): tidak dapat join jika sudah mencapai maxPlayers (2)', () => {
-    // buat lobby dengan 2 pemain manusia sudah ada
+  test('Entry limit (points): cannot join if maxPlayers (2) is reached', () => {
+    // create lobby with 2 human players already present
     const localMatches = new Map();
     const p1 = createParticipant('h1', { isBot: false, points: 0 });
     const p2 = createParticipant('h2', { isBot: false, points: 0 });
@@ -133,7 +133,7 @@ describe('Pengujian Mode Rebutan Poin (Points Mode)', () => {
     expect(body && body.error).toBe(`Lobby penuh (maks ${cfg.maxPlayers} pemain)`);
   });
 
-  test('Entry allowed (points): dapat join jika belum mencapai maxPlayers', () => {
+  test('Entry allowed (points): can join if not yet at maxPlayers', () => {
     const localMatches = new Map();
     const p1 = createParticipant('h1', { isBot: false, points: 0 });
     const lobby = { id: 'lobby2', mode: 'points', status: 'waiting', leader_id: 'h1', participants: new Map([[p1.user_id, p1]]) };
@@ -150,7 +150,7 @@ describe('Pengujian Mode Rebutan Poin (Points Mode)', () => {
     handler(req, res);
 
     expect(statusCode).toBe(200);
-    // peserta manusia sekarang 2
+    // human participants now 2
     const humanCount = Array.from(localMatches.get('lobby2').participants.values()).filter((p) => !p.is_bot).length;
     expect(humanCount).toBe(2);
   });

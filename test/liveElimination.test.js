@@ -39,7 +39,7 @@ function createMatch(participantIds, lives = 3) {
   };
 }
 
-describe('Pengujian Mode Eliminasi Nyawa (Lives Elimination Mode)', () => {
+describe('Testing Lives Elimination Mode', () => {
   let match;
   let gameService;
 
@@ -57,17 +57,17 @@ describe('Pengujian Mode Eliminasi Nyawa (Lives Elimination Mode)', () => {
     io.emit.mockClear();
   });
 
-  test('Pengurangan Nyawa: Pemain kalah harus berkurang nyawanya', () => {
+  test('Life Reduction: Losing player must lose a life', () => {
     const losers = ['p1'];
     const winners = ['p2'];
-    // Simulasikan p1 kalah, p2 menang
+    // Simulate p1 loses, p2 wins
     gameService._applyRoundOutcome(match, winners, losers, false);
 
     expect(match.participants.get('p1').lives).toBe(1); // 2 -> 1
-    expect(match.participants.get('p2').lives).toBe(2); // Nyawa utuh
+    expect(match.participants.get('p2').lives).toBe(2); // Lives intact
   });
 
-  test('Status Eliminasi: Jika nyawa 0, pemain jadi eliminated & spectator', () => {
+  test('Elimination Status: If lives 0, player becomes eliminated & spectator', () => {
     match.participants.get('p1').lives = 1; 
     gameService._applyRoundOutcome(match, ['p2'], ['p1'], false);
 
@@ -77,8 +77,8 @@ describe('Pengujian Mode Eliminasi Nyawa (Lives Elimination Mode)', () => {
     expect(p1.is_spectator).toBe(true);
   });
 
-  test('Pemenang Terakhir: checkGameOver mengembalikan true & winner_id di-set', () => {
-    // p1 dan p2 eliminated, hanya p3 tersisa
+  test('Last Winner: checkGameOver returns true & winner_id is set', () => {
+    // p1 and p2 eliminated, only p3 remains
     match.participants.get('p1').eliminated = true;
     match.participants.get('p1').is_spectator = true;
     match.participants.get('p2').eliminated = true;
@@ -90,7 +90,7 @@ describe('Pengujian Mode Eliminasi Nyawa (Lives Elimination Mode)', () => {
     expect(match.winner_id).toBe('p3');
   });
 
-  test('Pencegahan Double Loss: Pemain eliminated tidak dikurangi nyawa lagi', () => {
+  test('Prevent Double Loss: Eliminated player does not lose lives again', () => {
     const p1 = match.participants.get('p1');
     p1.lives = 0;
     p1.eliminated = true;
@@ -98,12 +98,12 @@ describe('Pengujian Mode Eliminasi Nyawa (Lives Elimination Mode)', () => {
 
     gameService._applyRoundOutcome(match, ['p2'], ['p1'], false);
 
-    // Nyawa tetap 0, tidak jadi -1
+    // Lives remain 0, not -1
     expect(p1.lives).toBe(0);
     expect(p1.eliminated).toBe(true);
   });
 
-  test('Entry limit (lives): tidak dapat join jika sudah mencapai maxPlayers (2)', () => {
+  test('Entry limit (lives): cannot join if maxPlayers (2) is reached', () => {
     const localMatches = new Map();
     const a = createParticipant('a', 3);
     const b = createParticipant('b', 3);
@@ -124,7 +124,7 @@ describe('Pengujian Mode Eliminasi Nyawa (Lives Elimination Mode)', () => {
     expect(body && body.error).toBe(`Lobby penuh (maks ${MODE_CONFIG.lives.maxPlayers} pemain)`);
   });
 
-  test('Entry allowed (lives): dapat join jika belum mencapai maxPlayers', () => {
+  test('Entry allowed (lives): can join if not yet at maxPlayers', () => {
     const localMatches = new Map();
     const a = createParticipant('a', 3);
     const lobby = { id: 'L2', mode: 'lives', status: 'waiting', leader_id: 'a', participants: new Map([[a.user_id, a]]) };
