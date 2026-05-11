@@ -165,13 +165,22 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
           ? `<div class="text-[9px] text-neon-gold font-bold uppercase tracking-widest">${p.custom_title}</div>`
           : "";
 
-        // --- TAMBAHAN KODE TOMBOL KICK ---
+        // --- PENGECEKAN SUPER AMAN ---
+        // Kita ubah ke string dan hapus semua spasi gaib dengan trim()
+        const currentUserId = String(p.user_id).trim();
+        const winnerId = state.lastWinnerId ? String(state.lastWinnerId).trim() : null;
+        const isLastWinner = winnerId && currentUserId === winnerId;
+
+        const winnerBadgeHtml = isLastWinner
+          ? `<div class="inline-block mt-1 px-1.5 py-0.5 rounded bg-primary/20 border border-primary/40 text-primary text-[8px] uppercase tracking-widest font-bold shadow-[0_0_10px_rgba(242,202,80,0.3)]">👑 I won the last match</div>`
+          : "";
+        // ------------------------------
+
         const showKickBtn = state.isLeader && !isMe;
-        const safeName = p.username.replace(/'/g, "\\'"); // Berjaga-jaga kalau ada user pakai tanda kutip di namanya
+        const safeName = p.username.replace(/'/g, "\\'"); 
         const kickBtnHtml = showKickBtn 
           ? `<button onclick="window.requestKickPlayer('${p.user_id}', '${safeName}')" class="ml-auto bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/50 rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide transition-colors">Kick</button>`
           : "";
-        // ---------------------------------
 
         return `
       <div class="flex items-center gap-2.5 rounded-xl px-3 py-2
@@ -184,7 +193,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
           <div class="text-sm font-semibold truncate ${isMe ? "text-neon-cyan" : isBot ? "text-slate-500" : "text-slate-200"}">
             ${titleHtml}${p.username}${isMe ? " (Kamu)" : ""}${isBot ? " 🤖" : ""}
           </div>
-          <div class="text-xs text-slate-600">
+          ${winnerBadgeHtml} <div class="text-xs text-slate-600 mt-0.5">
             ${isLeader && !isBot ? "👑 Leader" : p.is_spectator ? "👁 Spectator" : isBot ? "Auto" : "Pemain"}
             ${match.status !== "waiting" ? ` · 🏅${p.points} · ❤️${p.lives}` : ""}
           </div>
@@ -194,12 +203,16 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
       })
       .join("");
   }
-
+  
   function renderIngamePlayers(match) {
     document.getElementById("ingame-players").innerHTML = match.participants
       .map((p) => {
         const isMe = p.user_id === state.userId;
         const titleHtml = p.custom_title ? `<div class="text-[9px] text-neon-gold font-bold uppercase tracking-widest">${p.custom_title}</div>` : "";
+        const isLastWinner = p.user_id === state.lastWinnerId;
+        const winnerBadgeHtml = isLastWinner
+          ? `<div class="text-[8px] text-primary font-bold uppercase tracking-widest mb-0.5 glow-gold">👑 I won the last match</div>`
+          : "";
         const hasChosen = p.choice && p.choice !== "";
         const revChoice = (match.status === "result" || match.status === "finished") ? p.choice : null;
         const elemEmoji = revChoice ? ELEMENTS.find((e) => e.name === revChoice)?.emoji || "?" : null;

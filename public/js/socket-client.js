@@ -99,6 +99,14 @@ export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
     ui.lockElements(true);
 
     if (data.game_over) {
+      console.log("[DEBUG] game over data:", data);
+      if (data.winner_id) {
+        state.lastWinnerId = data.winner_id;
+        console.log("🏆 [DEBUG] Pemenang berhasil disimpan dengan ID:", state.lastWinnerId);
+      } else if (data.winner && data.winner_id){
+        state.lastWinnerId = data.winner.user_id
+        console.log("🤝 [DEBUG] Permainan Seri, tidak ada titel yang diberikan.");
+      }
       ui.showGameOver(data);
       return;
     }
