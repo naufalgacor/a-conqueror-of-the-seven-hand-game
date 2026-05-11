@@ -7,7 +7,7 @@ export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
     state.isLeader = data.is_leader;
     state.isSpectator = data.participant.is_spectator;
     state.modeConfig = data.mode_config;
-    ui.appendSystem(`👋 Bergabung sebagai ${data.is_leader ? "Leader 👑" : "Pemain"}`);
+    ui.appendSystem(`👋 Joined as ${data.is_leader ? "Leader 👑" : "Player"}`);
   });
 
   socket.on("lobby:state", (match) => {
@@ -15,13 +15,13 @@ export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
   });
 
   socket.on("lobby:leader:changed", (data) => {
-    ui.showToast(`👑 ${data.new_leader_username} adalah Leader baru!`);
-    ui.appendSystem(`👑 Leader baru: ${data.new_leader_username}`);
+    ui.showToast(`👑 ${data.new_leader_username} is the new Leader!`);
+    ui.appendSystem(`👑 New Leader: ${data.new_leader_username}`);
   });
 
   socket.on("lobby:you:are:leader", () => {
     state.isLeader = true;
-    ui.showToast("👑 Kamu sekarang menjadi Leader!");
+    ui.showToast("👑 You are now Leader!");
     document.getElementById("leader-panel").classList.remove("hidden");
   });
 
@@ -35,7 +35,7 @@ export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
     ui.setGameStartedUI({ mode: data.mode });
 
     if (data.bot_count > 0) {
-      ui.appendSystem(`🤖 ${data.bot_count} bot bergabung: ${data.bots.map((b) => b.username).join(", ")}`);
+      ui.appendSystem(`🤖 ${data.bot_count} bots joined: ${data.bots.map((b) => b.username).join(", ")}`);
     }
   });
 
@@ -65,15 +65,15 @@ export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
     ui.stopTimer();
 
     document.getElementById("timer-display").textContent = "⚡";
-    ui.appendSystem("⚡ Menghitung hasil...");
+    ui.appendSystem("⚡ Calculating result...");
   });
 
   socket.on("game:player:chosen", (data) => {
     if (data.changed) {
-      ui.appendSystem(`🔁 ${data.username} mengganti pilihan`);
+      ui.appendSystem(`🔁 ${data.username} changed choice`);
       return;
     }
-    ui.appendSystem(`✅ ${data.username} sudah memilih`);
+    ui.appendSystem(`✅ ${data.username} already chose`);
   });
 
   socket.on("game:choice:confirmed", (data) => {
@@ -89,10 +89,10 @@ export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
       console.log("[DEBUG] game over data:", data);
       if (data.winner_id) {
         state.lastWinnerId = data.winner_id;
-        console.log("🏆 [DEBUG] Pemenang berhasil disimpan dengan ID:", state.lastWinnerId);
+        console.log("🏆 [DEBUG] Winner successfully saved with ID:", state.lastWinnerId);
       } else if (data.winner && data.winner_id){
-        state.lastWinnerId = data.winner.user_id
-        console.log("🤝 [DEBUG] Permainan Seri, tidak ada titel yang diberikan.");
+        state.lastWinnerId = data.winner.user_id;
+        console.log("🤝 [DEBUG] Game Draw, no title given.");
       }
       ui.showGameOver(data);
       return;
@@ -106,13 +106,13 @@ export function createSocketClient({ state, ui, MODE_LABELS, actions = {} }) {
       .join(" | ");
     ui.appendSystem(`📊 ${lines}`);
 
-    if (data.draw) ui.appendSystem("🤝 Ronde ini SERI");
+    if (data.draw) ui.appendSystem("🤝 This round is a DRAW");
   });
 
   socket.on("game:eliminated", (data) => {
     state.isSpectator = true;
     ui.showToast("💀 " + data.message, 15000);
-    ui.appendSystem("💀 Kamu tereliminasi! Mode Spectator aktif.");
+    ui.appendSystem("💠 You are eliminated! Spectator mode active.");
   });
 
   socket.on("error", (data) => ui.showToast("❌ " + data.message));

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="dark" lang="id">
+<html class="dark" lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -207,12 +207,8 @@
 
 <body class="min-h-screen flex flex-col relative">
 
-<!-- ══════════════════════════════════════════════════════════
-     SCREEN: HOME
-══════════════════════════════════════════════════════════ -->
 <div id="screen-home" class="screen active flex-col items-center justify-center min-h-screen p-6 gap-8">
 
-  <!-- Title -->
   <div class="text-center">
     <span class="font-display text-5xl md:text-6xl font-bold text-white tracking-widest mb-2 uppercase">A Conqueror of the</span>
     <div class="font-display text-5xl md:text-6xl font-bold text-primary text-glow-gold tracking-widest mb-2 uppercase">
@@ -221,27 +217,26 @@
     <div class="text-on-surface-variant text-sm tracking-[.35em] uppercase mt-3">A Conqueror — Web Programming Final Project</div>
   </div>
 
-  <!-- Main card -->
   <div class="glass bronze-frame rounded-lg p-8 w-full max-w-md flex flex-col gap-5 relative corner-tl corner-tr">
     <div>
-      <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-widest mb-2">Nama Pemain</label>
-      <input id="input-username" type="text" maxlength="20" placeholder="Masukkan namamu..."
+      <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-widest mb-2">Player Name</label>
+      <input id="input-username" type="text" maxlength="20" placeholder="Enter your name..."
         class="w-full bg-surface-container-lowest border border-outline rounded px-4 py-3 text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all" />
     </div>
 
     <button onclick="createLobby()"
       class="w-full py-3.5 rounded font-display text-lg tracking-widest bg-primary text-on-primary font-bold hover:brightness-110 active:scale-95 transition-all glow-gold uppercase">
-      ⚗ Buat Lobby Baru
+      ⚗ Create New Lobby
     </button>
 
     <div class="flex items-center gap-3">
       <div class="flex-1 h-px bg-outline-variant"></div>
-      <span class="text-on-surface-variant text-xs tracking-widest">atau</span>
+      <span class="text-on-surface-variant text-xs tracking-widest">or</span>
       <div class="flex-1 h-px bg-outline-variant"></div>
     </div>
 
     <div class="flex gap-2">
-      <input id="input-lobby-id" type="text" placeholder="Masukkan Lobby ID..."
+      <input id="input-lobby-id" type="text" placeholder="Enter Lobby ID..."
         class="flex-1 bg-surface-container-lowest border border-outline rounded px-4 py-3 text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all text-sm" />
       <button onclick="joinLobbyById()"
         class="px-5 py-3 rounded font-display text-sm tracking-widest bg-secondary-container text-secondary font-bold hover:brightness-110 active:scale-95 transition-all border border-secondary/40">
@@ -251,16 +246,15 @@
 
     <button onclick="loadLobbies()"
       class="w-full py-2.5 rounded border border-outline text-on-surface-variant text-xs hover:border-primary hover:text-primary transition-all tracking-widest uppercase">
-      🔍 Lihat Lobby Tersedia
+      🔍 Browse Available Lobbies
     </button>
     <div id="lobby-list" class="flex flex-col gap-2 max-h-52 overflow-y-auto"></div>
   </div>
 
   <div id="home-error" class="text-error text-sm hidden"></div>
 
-  <!-- Elements showcase -->
   <div class="glass rounded-lg p-5 w-full max-w-md bronze-frame">
-    <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-3 font-semibold text-center">7 Elemen Alkimia</div>
+    <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-3 font-semibold text-center">7 Alchemy Elements</div>
     <div class="grid grid-cols-7 gap-1.5 text-center">
       <div class="text-2xl">🪨</div><div class="text-2xl">🔥</div><div class="text-2xl">✂️</div>
       <div class="text-2xl">🧽</div><div class="text-2xl">📄</div><div class="text-2xl">💨</div><div class="text-2xl">💧</div>
@@ -271,48 +265,43 @@
     </div>
   </div>
 
-  <!-- Rules -->
   <section class="w-full max-w-4xl p-6 glass bronze-frame rounded-lg">
-    <h2 class="text-2xl md:text-3xl font-display font-bold text-primary mb-6 text-center tracking-wide">📖 Aturan Penaklukan</h2>
+    <h2 class="text-2xl md:text-3xl font-display font-bold text-primary mb-6 text-center tracking-wide">📖 Rules of Conquest</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-outline transition-colors">
-        <div class="text-xl mb-1 font-bold text-on-surface">🪨 Batu</div>
-        <div class="text-sm text-on-surface-variant">mengalahkan <span class="text-error">Api</span>, <span class="text-on-surface">Gunting</span>, <span class="text-primary">Spons</span></div>
+        <div class="text-xl mb-1 font-bold text-on-surface">🪨 Rock</div>
+        <div class="text-sm text-on-surface-variant">beats <span class="text-error">Fire</span>, <span class="text-on-surface">Scissors</span>, <span class="text-primary">Sponge</span></div>
       </div>
       <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-primary/50 transition-colors">
-        <div class="text-xl mb-1 font-bold text-on-surface">🔥 Api</div>
-        <div class="text-sm text-on-surface-variant">mengalahkan <span class="text-on-surface">Gunting</span>, <span class="text-primary">Spons</span>, <span class="text-secondary">Kertas</span></div>
+        <div class="text-xl mb-1 font-bold text-on-surface">🔥 Fire</div>
+        <div class="text-sm text-on-surface-variant">beats <span class="text-on-surface">Scissors</span>, <span class="text-primary">Sponge</span>, <span class="text-secondary">Paper</span></div>
       </div>
       <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-outline transition-colors">
-        <div class="text-xl mb-1 font-bold text-on-surface">✂️ Gunting</div>
-        <div class="text-sm text-on-surface-variant">mengalahkan <span class="text-primary">Spons</span>, <span class="text-secondary">Kertas</span>, <span class="text-tertiary">Udara</span></div>
+        <div class="text-xl mb-1 font-bold text-on-surface">✂️ Scissors</div>
+        <div class="text-sm text-on-surface-variant">beats <span class="text-primary">Sponge</span>, <span class="text-secondary">Paper</span>, <span class="text-tertiary">Air</span></div>
       </div>
       <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-primary/50 transition-colors">
-        <div class="text-xl mb-1 font-bold text-on-surface">🧽 Spons</div>
-        <div class="text-sm text-on-surface-variant">mengalahkan <span class="text-secondary">Kertas</span>, <span class="text-tertiary">Udara</span>, <span class="text-secondary-fixed-dim">Air</span></div>
+        <div class="text-xl mb-1 font-bold text-on-surface">🧽 Sponge</div>
+        <div class="text-sm text-on-surface-variant">beats <span class="text-secondary">Paper</span>, <span class="text-tertiary">Air</span>, <span class="text-secondary-fixed-dim">Water</span></div>
       </div>
       <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-secondary/50 transition-colors">
-        <div class="text-xl mb-1 font-bold text-on-surface">📄 Kertas</div>
-        <div class="text-sm text-on-surface-variant">mengalahkan <span class="text-tertiary">Udara</span>, <span class="text-secondary-fixed-dim">Air</span>, <span class="text-on-surface-variant">Batu</span></div>
+        <div class="text-xl mb-1 font-bold text-on-surface">📄 Paper</div>
+        <div class="text-sm text-on-surface-variant">beats <span class="text-tertiary">Air</span>, <span class="text-secondary-fixed-dim">Water</span>, <span class="text-on-surface-variant">Rock</span></div>
       </div>
       <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-tertiary/50 transition-colors">
-        <div class="text-xl mb-1 font-bold text-on-surface">💨 Udara</div>
-        <div class="text-sm text-on-surface-variant">mengalahkan <span class="text-secondary-fixed-dim">Air</span>, <span class="text-on-surface-variant">Batu</span>, <span class="text-error">Api</span></div>
+        <div class="text-xl mb-1 font-bold text-on-surface">💨 Air</div>
+        <div class="text-sm text-on-surface-variant">beats <span class="text-secondary-fixed-dim">Water</span>, <span class="text-on-surface-variant">Rock</span>, <span class="text-error">Fire</span></div>
       </div>
       <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-secondary-fixed-dim/50 transition-colors md:col-span-2 lg:col-span-1">
-        <div class="text-xl mb-1 font-bold text-on-surface">💧 Air</div>
-        <div class="text-sm text-on-surface-variant">mengalahkan <span class="text-on-surface-variant">Batu</span>, <span class="text-error">Api</span>, <span class="text-on-surface">Gunting</span></div>
+        <div class="text-xl mb-1 font-bold text-on-surface">💧 Water</div>
+        <div class="text-sm text-on-surface-variant">beats <span class="text-on-surface-variant">Rock</span>, <span class="text-error">Fire</span>, <span class="text-on-surface">Scissors</span></div>
       </div>
     </div>
   </section>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     SCREEN: LOBBY  (redesigned — chat on RIGHT)
-══════════════════════════════════════════════════════════ -->
 <div id="screen-lobby" class="screen flex-col min-h-screen">
 
-  <!-- Top Bar -->
   <header class="bg-surface-container border-b border-outline-variant z-40 sticky top-0">
     <div class="flex justify-between items-center w-full px-6 md:px-10 h-16">
       <div class="flex items-center gap-4">
@@ -324,18 +313,18 @@
       <nav class="hidden md:flex gap-2 h-full items-center">
         <button onclick="toggleMusic()" class="flex items-center gap-1.5 text-on-surface-variant hover:text-primary px-3 py-1.5 text-sm tracking-widest uppercase transition-colors border border-outline-variant rounded bg-surface-container-highest/30 active:scale-95">
           <span id="music-icon">🔇</span>
-          <span class="text-xs">BGM</span>
+          <span class="text-xs">Music</span>
         </button>
 
         <button onclick="openGameInfo()" class="flex items-center gap-1.5 text-on-surface-variant hover:text-primary px-4 py-2 text-sm tracking-widest uppercase transition-colors border-l border-outline-variant ml-1">
-          <span>📖</span> Cara Main
+          <span>📖</span> How to Play
         </button>
       </nav>
       
       <div class="flex items-center gap-3">
         <div class="flex items-center gap-1.5">
           <div class="w-2 h-2 rounded-full bg-tertiary live-dot"></div>
-          <span class="text-xs text-on-surface-variant" id="lobby-player-count">0 Pemain</span>
+          <span class="text-xs text-on-surface-variant" id="lobby-player-count">0 Players</span>
         </div>
         <div class="flex items-center gap-2 ml-2">
           <span class="text-xs text-on-surface-variant font-mono" id="lobby-id-display"></span>
@@ -347,19 +336,16 @@
         </div>
         <button onclick="leaveLobby()"
           class="px-3 py-1.5 rounded border border-error/40 text-error text-xs hover:bg-error-container/30 transition-all ml-1">
-          Keluar
+          Leave
         </button>
       </div>
     </div>
   </header>
 
-  <!-- 3-column layout: Left (settings/players) | Center (arena/game) | Right (chat) -->
   <div class="flex flex-1 gap-0 overflow-hidden" style="min-height: calc(100vh - 64px);">
 
-    <!-- ── LEFT SIDEBAR ── -->
     <aside class="w-72 flex-shrink-0 flex flex-col gap-4 p-5 bg-surface-container-low border-r border-outline-variant overflow-y-auto">
 
-      <!-- Players list -->
       <div class="glass bronze-frame rounded-lg p-4 relative corner-tl">
         <div class="text-xs text-on-surface-variant uppercase tracking-widest font-semibold mb-3 flex items-center justify-between">
           <span>⚔ Participants</span>
@@ -367,23 +353,21 @@
         <div id="players-list" class="flex flex-col gap-2"></div>
       </div>
 
-      <!-- Cup bracket -->
       <div id="cup-bracket-container" class="hidden glass rounded-lg p-3 border border-primary/20">
-        <div class="text-xs text-primary uppercase tracking-widest font-bold mb-2 text-center">🏅 Bagan Turnamen</div>
+        <div class="text-xs text-primary uppercase tracking-widest font-bold mb-2 text-center">🏅 Tournament Bracket</div>
         <div id="cup-bracket-list" class="flex flex-col gap-1.5"></div>
       </div>
 
-      <!-- Leader panel -->
       <div id="leader-panel" class="glass bronze-frame rounded-lg p-4 hidden relative corner-tl">
         <div class="text-xs text-primary text-glow-gold uppercase tracking-widest font-semibold mb-3">👑 Lobby Settings</div>
         <div class="mb-3">
-          <label class="text-xs text-on-surface-variant mb-1.5 block uppercase tracking-wider">Mode Permainan</label>
+          <label class="text-xs text-on-surface-variant mb-1.5 block uppercase tracking-wider">Game Mode</label>
           <div class="flex items-center gap-2 bg-surface-container-highest p-3 rounded border border-outline cursor-pointer hover:border-primary transition-colors">
             <span class="text-primary text-lg">🏆</span>
             <select id="mode-select" onchange="updateGameMode(this.value)"
               class="flex-1 bg-transparent border-none text-on-surface text-sm focus:ring-0 focus:outline-none font-semibold uppercase tracking-wider cursor-pointer appearance-none bg-none pr-10">
-              <option value="points" class="bg-surface-container-highest text-on-surface">Rebutan Poin</option>
-              <option value="lives" class="bg-surface-container-highest text-on-surface">Eliminasi Nyawa</option>
+              <option value="points" class="bg-surface-container-highest text-on-surface">Point Rush</option>
+              <option value="lives" class="bg-surface-container-highest text-on-surface">Lives Elimination</option>
               <option value="cup" class="bg-surface-container-highest text-on-surface">Cup Mode</option>
             </select>
           </div>
@@ -391,43 +375,37 @@
         <div id="mode-info-badge" class="mb-3 rounded px-3 py-2 bg-surface-container border border-outline-variant text-xs text-on-surface-variant"></div>
         <button id="btn-start" onclick="startGame()"
           class="w-full py-3 rounded font-display text-base tracking-wider bg-primary text-on-primary font-bold hover:brightness-110 active:scale-95 transition-all glow-gold uppercase">
-          ▶ Mulai Permainan
+          ▶ Start Game
         </button>
       </div>
 
-      <!-- Spectator notice -->
       <div id="spectator-notice" class="hidden glass rounded-lg p-4 border border-tertiary/40">
         <div class="text-tertiary text-xs font-semibold uppercase tracking-widest mb-1">👁 Spectator Mode</div>
-        <p class="text-on-surface-variant text-xs">Nyawamu habis. Kamu menonton secara real-time. Chat masih aktif!</p>
+        <p class="text-on-surface-variant text-xs">You are out of lives. Watching in real-time. Chat still active!</p>
         <button onclick="leaveAsSpectator()"
           class="mt-3 w-full py-2 rounded border border-outline text-on-surface-variant text-xs hover:text-on-surface hover:border-outline-variant transition-all">
-          Tinggalkan Pertandingan
+          Leave Match
         </button>
       </div>
 
-      <!-- Cara Main shortcut button -->
       <button onclick="openGameInfo()"
         class="w-full glass bronze-frame rounded-lg p-4 flex items-center gap-3 hover:border-primary/60 hover:bg-primary/5 transition-all group text-left relative corner-tl">
         <div class="w-10 h-10 rounded bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
           <span class="text-xl">📖</span>
         </div>
         <div>
-          <div class="text-xs text-primary font-semibold uppercase tracking-widest">Cara Main</div>
-          <div class="text-xs text-on-surface-variant mt-0.5">Aturan &amp; info elemen</div>
+          <div class="text-xs text-primary font-semibold uppercase tracking-widest">How to Play</div>
+          <div class="text-xs text-on-surface-variant mt-0.5">Rules & element info</div>
         </div>
         <span class="ml-auto text-on-surface-variant group-hover:text-primary transition-colors text-xl">›</span>
       </button>
     </aside>
 
-    <!-- ── CENTER: ARENA / GAME ── -->
     <main class="flex-1 flex flex-col gap-4 p-5 overflow-y-auto">
 
-      <!-- Mode info -->
       <div id="current-mode-display" class="text-xs text-on-surface-variant bg-surface-container rounded px-4 py-2 border border-outline-variant text-center"></div>
 
-      <!-- WAITING -->
       <div id="waiting-screen" class="glass bronze-frame rounded-lg p-8 flex flex-col items-center gap-5 text-center relative corner-tl corner-tr">
-        <!-- Mystical circle decoration -->
         <div class="relative w-48 h-48 flex items-center justify-center mb-2">
           <div class="absolute inset-0 rounded-full border border-primary/20 animate-[spin_40s_linear_infinite]">
             <div class="absolute inset-3 rounded-full border border-dashed border-tertiary/15"></div>
@@ -435,14 +413,12 @@
           <div class="absolute inset-6 rounded-full border border-outline/30 rotate-45"></div>
           <div class="text-6xl relative z-10">⏳</div>
         </div>
-        <div class="font-display text-2xl text-primary text-glow-gold">Menunggu Leader</div>
-        <div class="text-on-surface-variant text-sm max-w-xs">Minimal 1 pemain — bot otomatis mengisi slot kosong saat game dimulai</div>
+        <div class="font-display text-2xl text-primary text-glow-gold">Waiting for Leader</div>
+        <div class="text-on-surface-variant text-sm max-w-xs">Minimum 1 player — bots automatically fill empty slots when game starts</div>
       </div>
 
-      <!-- GAME BOARD -->
       <div id="game-board" class="hidden flex flex-col gap-4">
 
-        <!-- Status bar -->
         <div class="glass bronze-frame rounded-lg p-4 flex items-center justify-between relative corner-tl corner-tr">
           <div>
             <div class="text-xs text-on-surface-variant uppercase tracking-widest">Status</div>
@@ -456,55 +432,49 @@
             <div id="timer-display" class="font-display text-xl text-primary text-glow-gold relative z-10">—</div>
           </div>
           <div class="text-right">
-            <div class="text-xs text-on-surface-variant uppercase tracking-widest">Babak</div>
+            <div class="text-xs text-on-surface-variant uppercase tracking-widest">Round</div>
             <div id="round-label" class="font-display text-2xl text-primary text-glow-gold">1</div>
           </div>
         </div>
 
-        <!-- Result banner -->
         <div id="result-banner" class="hidden glass rounded-lg py-4 text-center border border-primary/30">
           <div id="result-icon" class="text-4xl mb-1"></div>
           <div id="result-text" class="font-display text-xl text-primary"></div>
           <div id="result-detail" class="text-sm text-on-surface-variant mt-1"></div>
         </div>
 
-        <!-- Element selection -->
         <div class="glass bronze-frame rounded-lg p-4 relative corner-tl">
-          <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-3 text-center">Pilih Elemen</div>
+          <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-3 text-center">Choose Element</div>
           <div class="grid grid-cols-4 md:grid-cols-7 gap-2" id="elements-grid"></div>
         </div>
 
-        <!-- In-game player status -->
         <div>
-          <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-2">Status Duel Saat Ini</div>
+          <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-2">Current Duel Status</div>
           <div id="ingame-players" class="grid grid-cols-2 md:grid-cols-4 gap-2"></div>
         </div>
       </div>
 
-      <!-- GAME OVER -->
       <div id="game-over-screen" class="hidden glass bronze-frame rounded-lg p-8 flex flex-col items-center gap-5 text-center relative corner-tl corner-tr">
         <div class="text-6xl" id="game-over-emoji">🏆</div>
-        <div class="font-display text-3xl text-primary text-glow-gold" id="game-over-title">SELESAI</div>
+        <div class="font-display text-3xl text-primary text-glow-gold" id="game-over-title">FINISHED</div>
         <div class="text-on-surface text-lg" id="game-over-winner"></div>
         <div id="final-scoreboard" class="w-full max-w-sm"></div>
         <div class="flex gap-4 mt-2">
           <button onclick="goHome()"
             class="px-6 py-3 rounded border border-outline text-on-surface-variant hover:text-on-surface hover:border-outline-variant transition-all font-display text-sm uppercase tracking-wider">
-            ← Keluar Lobby
+            ← Leave Lobby
           </button>
           <button id="btn-restart-game" onclick="window.requestRestartLobby()"
             class="hidden px-8 py-3 rounded font-display text-sm tracking-widest bg-primary text-on-primary font-bold hover:brightness-110 active:scale-95 transition-all glow-gold uppercase">
-            Main Lagi
+            Play Again
           </button>
         </div>
       </div>
 
     </main>
 
-    <!-- ── RIGHT SIDEBAR: CHAT (moved here per requirement) ── -->
     <aside class="w-80 flex-shrink-0 flex flex-col bg-surface-container-low border-l border-outline-variant">
 
-      <!-- Chat header -->
       <div class="flex items-center justify-between px-4 py-3 border-b border-outline-variant bg-surface-container">
         <div class="font-display text-base text-primary uppercase tracking-widest">Lobby Scrolls</div>
         <div class="flex items-center gap-1.5">
@@ -513,10 +483,8 @@
         </div>
       </div>
 
-      <!-- Chat messages -->
       <div id="chat-box" class="chat-box flex-1 overflow-y-auto flex flex-col gap-2 p-4"></div>
 
-      <!-- Chat input -->
       <div class="border-t border-outline-variant p-3 bg-surface-container">
         <div class="flex gap-2">
           <input id="chat-input" type="text" maxlength="300" placeholder="Inscribe message..."
@@ -532,7 +500,6 @@
 
   </div>
 
-  <!-- Mobile bottom nav -->
   <nav class="bg-surface-container-lowest/90 backdrop-blur-md border-t border-outline-variant fixed bottom-0 w-full z-50 lg:hidden flex justify-around items-center px-4 py-3">
     <a class="flex flex-col items-center text-primary" href="#">
       <span class="text-xl">⚔</span>
@@ -553,38 +520,30 @@
   </nav>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     GLOBAL OVERLAYS
-══════════════════════════════════════════════════════════ -->
-
-<!-- Toast -->
 <div id="toast" class="fixed top-5 right-5 z-50 hidden pointer-events-none">
   <div class="glass-dark rounded px-5 py-3 text-sm border border-outline shadow-2xl animate-slide-up">
     <span id="toast-text"></span>
   </div>
 </div>
 
-<!-- Particles -->
 <div id="particles-container" class="fixed inset-0 pointer-events-none z-40 overflow-hidden"></div>
 
-<!-- Kick Modal -->
 <div id="kick-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
   <div class="glass bronze-frame rounded-lg p-6 max-w-sm w-full mx-4 border border-error/30 shadow-[0_0_20px_rgba(220,38,38,.15)] animate-pop-in text-center relative corner-tl corner-tr">
     <div class="text-4xl mb-3">⚠️</div>
-    <h3 class="text-lg font-display text-on-surface mb-2">Kick Pemain</h3>
-    <p class="text-sm text-on-surface-variant mb-6">Yakin ingin mengeluarkan <strong id="kick-modal-username" class="text-primary"></strong> dari lobi?</p>
+    <h3 class="text-lg font-display text-on-surface mb-2">Kick Player</h3>
+    <p class="text-sm text-on-surface-variant mb-6">Are you sure you want to kick <strong id="kick-modal-username" class="text-primary"></strong> from the lobby?</p>
     <div class="flex gap-3 justify-center">
-      <button id="btn-cancel-kick" class="flex-1 px-4 py-2 rounded text-sm font-semibold text-on-surface-variant bg-surface-container hover:bg-surface-container-high border border-outline transition-colors">Batal</button>
-      <button id="btn-confirm-kick" class="flex-1 px-4 py-2 rounded text-sm font-semibold bg-error-container/30 hover:bg-error-container/50 border border-error/50 transition-colors text-error">Ya, Kick!</button>
+      <button id="btn-cancel-kick" class="flex-1 px-4 py-2 rounded text-sm font-semibold text-on-surface-variant bg-surface-container hover:bg-surface-container-high border border-outline transition-colors">Cancel</button>
+      <button id="btn-confirm-kick" class="flex-1 px-4 py-2 rounded text-sm font-semibold bg-error-container/30 hover:bg-error-container/50 border border-error/50 transition-colors text-error">Yes, Kick!</button>
     </div>
   </div>
 </div>
 
-<!-- Cup match popup -->
 <div id="cup-match-popup" class="hidden fixed z-[95] glass-dark rounded-lg border border-primary/40 shadow-[0_0_24px_rgba(242,202,80,.2)] overflow-hidden" style="top:72px;right:340px;width:280px;">
   <div class="p-4">
     <div class="text-center mb-3">
-      <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-0.5">🏅 Bagan Turnamen</div>
+      <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-0.5">🏅 Tournament Bracket</div>
       <div id="cup-popup-match-label" class="text-xs text-primary font-bold uppercase tracking-wider"></div>
     </div>
     <div id="cup-popup-fighters" class="flex items-center justify-center gap-4"></div>
@@ -594,10 +553,9 @@
   </div>
 </div>
 
-<!-- VS Overlay -->
 <div id="vs-overlay" class="hidden fixed inset-0 z-[100] flex flex-col items-center justify-center bg-surface-dim/95 backdrop-blur-md transition-all duration-300">
   <div class="animate-pop-in text-center w-full">
-    <h2 id="vs-round-label" class="text-primary text-2xl mb-10 tracking-[.3em] uppercase font-bold text-glow-gold font-display">Putaran 1</h2>
+    <h2 id="vs-round-label" class="text-primary text-2xl mb-10 tracking-[.3em] uppercase font-bold text-glow-gold font-display">Round 1</h2>
     <div class="flex items-center justify-center gap-6 md:gap-16 w-full px-4">
       <div class="flex flex-col items-center w-1/3">
         <div id="vs-p1-avatar" class="text-6xl md:text-8xl mb-4 bg-surface-container w-24 h-24 md:w-32 md:h-32 rounded border-2 border-primary flex items-center justify-center glow-gold">👤</div>
@@ -614,119 +572,107 @@
 
 <script type="module" src="/js/main.js"></script>
 
-<!-- ══════════════════════════════════════════════════════════
-     MODAL: CARA MAIN / INFO ELEMEN
-══════════════════════════════════════════════════════════ -->
 <div id="info-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/75 backdrop-blur-sm" onclick="if(event.target===this)closeGameInfo()">
   <div class="relative w-full max-w-3xl mx-4 max-h-[90vh] flex flex-col glass-dark rounded-lg border border-outline shadow-[0_0_40px_rgba(242,202,80,.15)] animate-pop-in overflow-hidden" style="background:linear-gradient(160deg,#1a1c19 0%,#121411 100%)">
 
-    <!-- Modal Header -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-outline-variant flex-shrink-0" style="background:linear-gradient(90deg,rgba(242,202,80,.06) 0%,transparent 60%)">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded bg-primary/15 border border-primary/30 flex items-center justify-center text-lg">📖</div>
         <div>
-          <div class="font-display text-lg text-primary uppercase tracking-widest leading-none">Cara Main</div>
-          <div class="text-xs text-on-surface-variant mt-0.5 tracking-wider">A Conqueror of the Seven Hand Game — Panduan Alkimia</div>
+          <div class="font-display text-lg text-primary uppercase tracking-widest leading-none">How to Play</div>
+          <div class="text-xs text-on-surface-variant mt-0.5 tracking-wider">A Conqueror of the Seven Hand Game — Alchemy Guide</div>
         </div>
       </div>
       <button onclick="closeGameInfo()" class="w-8 h-8 flex items-center justify-center rounded border border-outline text-on-surface-variant hover:text-primary hover:border-primary transition-all text-lg leading-none">✕</button>
     </div>
 
-    <!-- Tabs -->
     <div class="flex border-b border-outline-variant flex-shrink-0 bg-surface-container/50">
       <button id="tab-btn-rules" onclick="switchInfoTab('rules')"
         class="info-tab-btn flex-1 py-3 text-xs font-semibold uppercase tracking-widest text-primary border-b-2 border-primary transition-all">
-        ⚔ Aturan Dasar
+        ⚔ Basic Rules
       </button>
       <button id="tab-btn-elements" onclick="switchInfoTab('elements')"
         class="info-tab-btn flex-1 py-3 text-xs font-semibold uppercase tracking-widest text-on-surface-variant border-b-2 border-transparent hover:text-primary transition-all">
-        🌀 7 Elemen
+        🌀 7 Elements
       </button>
       <button id="tab-btn-modes" onclick="switchInfoTab('modes')"
         class="info-tab-btn flex-1 py-3 text-xs font-semibold uppercase tracking-widest text-on-surface-variant border-b-2 border-transparent hover:text-primary transition-all">
-        🏆 Mode Game
+        🏆 Game Modes
       </button>
     </div>
 
-    <!-- Scrollable content -->
     <div class="flex-1 overflow-y-auto scrollbar-hide">
 
-      <!-- TAB: RULES -->
       <div id="tab-rules" class="info-tab p-6 flex flex-col gap-5">
-        <p class="text-on-surface-variant text-sm leading-relaxed">A Conqueror of the Seven-Hand Game adalah evolusi dari Rock-Paper-Scissors dengan <strong class="text-primary">7 elemen</strong> yang saling mengalahkan satu sama lain. Setiap elemen mengalahkan 3 elemen lain dan dikalahkan oleh 3 elemen lainnya.</p>
+        <p class="text-on-surface-variant text-sm leading-relaxed">A Conqueror of the Seven-Hand Game is an evolution of Rock-Paper-Scissors with <strong class="text-primary">7 elements</strong> that defeat one another. Each element beats 3 other elements and loses to 3 other elements.</p>
 
-        <!-- Quick flow diagram -->
         <div class="glass rounded-lg p-4 border border-outline-variant">
-          <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-3 text-center">Alur Permainan</div>
+          <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-3 text-center">Game Flow</div>
           <div class="flex flex-col gap-2">
             <div class="flex items-center gap-3">
               <div class="w-7 h-7 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">1</div>
-              <div class="text-sm text-on-surface">Leader membuat lobby dan memilih <span class="text-primary font-semibold">mode permainan</span></div>
+              <div class="text-sm text-on-surface">Leader creates lobby and chooses <span class="text-primary font-semibold">game mode</span></div>
             </div>
             <div class="w-0.5 h-4 bg-outline-variant ml-3.5"></div>
             <div class="flex items-center gap-3">
               <div class="w-7 h-7 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">2</div>
-              <div class="text-sm text-on-surface">Pemain lain bergabung via <span class="text-secondary font-semibold">Lobby ID</span></div>
+              <div class="text-sm text-on-surface">Other players join via <span class="text-secondary font-semibold">Lobby ID</span></div>
             </div>
             <div class="w-0.5 h-4 bg-outline-variant ml-3.5"></div>
             <div class="flex items-center gap-3">
               <div class="w-7 h-7 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">3</div>
-              <div class="text-sm text-on-surface">Setiap ronde, semua pemain <span class="text-primary font-semibold">memilih 1 elemen</span> secara bersamaan</div>
+              <div class="text-sm text-on-surface">Each round, all players <span class="text-primary font-semibold">choose 1 element</span> simultaneously</div>
             </div>
             <div class="w-0.5 h-4 bg-outline-variant ml-3.5"></div>
             <div class="flex items-center gap-3">
               <div class="w-7 h-7 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">4</div>
-              <div class="text-sm text-on-surface">Server menghitung hasil — pemenang mendapat <span class="text-primary font-semibold">poin / HP terjaga</span></div>
+              <div class="text-sm text-on-surface">Server calculates results — winner gets <span class="text-primary font-semibold">points / HP preserved</span></div>
             </div>
             <div class="w-0.5 h-4 bg-outline-variant ml-3.5"></div>
             <div class="flex items-center gap-3">
               <div class="w-7 h-7 rounded-full bg-tertiary/20 border border-tertiary/40 flex items-center justify-center text-tertiary text-xs font-bold flex-shrink-0">✓</div>
-              <div class="text-sm text-on-surface">Kondisi kemenangan tergantung mode — lihat tab <span class="text-primary font-semibold">Mode Game</span></div>
+              <div class="text-sm text-on-surface">Win condition depends on mode — see <span class="text-primary font-semibold">Game Modes</span> tab</div>
             </div>
           </div>
         </div>
 
-        <!-- Key rules -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div class="bg-surface-container rounded p-3 border border-outline-variant flex gap-3">
             <span class="text-2xl flex-shrink-0">⏱</span>
             <div>
-              <div class="text-xs text-primary font-semibold uppercase tracking-wider mb-0.5">Timer Terbatas</div>
-              <div class="text-xs text-on-surface-variant">Setiap ronde ada timer. Jika tidak memilih, elemen terakhirmu dipakai (atau random jika belum pernah pilih).</div>
+              <div class="text-xs text-primary font-semibold uppercase tracking-wider mb-0.5">Limited Timer</div>
+              <div class="text-xs text-on-surface-variant">Each round has a timer. If you don't choose, your last element is used (or random if you haven't chosen yet).</div>
             </div>
           </div>
           <div class="bg-surface-container rounded p-3 border border-outline-variant flex gap-3">
             <span class="text-2xl flex-shrink-0">🤖</span>
             <div>
-              <div class="text-xs text-primary font-semibold uppercase tracking-wider mb-0.5">Bot Otomatis</div>
-              <div class="text-xs text-on-surface-variant">Jika bermain solo, bot mengisi slot kosong secara otomatis saat game dimulai.</div>
+              <div class="text-xs text-primary font-semibold uppercase tracking-wider mb-0.5">Auto Bots</div>
+              <div class="text-xs text-on-surface-variant">If playing solo, bots automatically fill empty slots when game starts.</div>
             </div>
           </div>
           <div class="bg-surface-container rounded p-3 border border-outline-variant flex gap-3">
             <span class="text-2xl flex-shrink-0">🤝</span>
             <div>
-              <div class="text-xs text-primary font-semibold uppercase tracking-wider mb-0.5">Seri</div>
-              <div class="text-xs text-on-surface-variant">Jika kedua pemain memilih elemen yang sama, ronde dinyatakan seri. Tidak ada poin/HP yang berubah.</div>
+              <div class="text-xs text-primary font-semibold uppercase tracking-wider mb-0.5">Draw</div>
+              <div class="text-xs text-on-surface-variant">If both players choose the same element, the round is a draw. No points/HP change.</div>
             </div>
           </div>
           <div class="bg-surface-container rounded p-3 border border-outline-variant flex gap-3">
             <span class="text-2xl flex-shrink-0">👁</span>
             <div>
               <div class="text-xs text-primary font-semibold uppercase tracking-wider mb-0.5">Spectator</div>
-              <div class="text-xs text-on-surface-variant">Pemain yang HP-nya habis (mode lives) masuk ke mode spectator — masih bisa menonton dan chat.</div>
+              <div class="text-xs text-on-surface-variant">Players whose HP runs out (lives mode) enter spectator mode — still watch and chat.</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- TAB: ELEMENTS -->
       <div id="tab-elements" class="info-tab hidden p-6">
-        <p class="text-on-surface-variant text-sm mb-4">Klik elemen untuk melihat detail lengkap — apa yang dikalahkan dan apa yang mengalahkannya.</p>
+        <p class="text-on-surface-variant text-sm mb-4">Click an element to see full details — what it beats and what beats it.</p>
 
-        <!-- Element selector grid -->
         <div class="grid grid-cols-7 gap-2 mb-5" id="elem-selector-grid"></div>
 
-        <!-- Element detail card -->
         <div id="elem-detail-card" class="glass rounded-lg border border-primary/30 overflow-hidden" style="display:none">
           <div id="elem-detail-header" class="p-4 flex items-center gap-4" style="background:rgba(242,202,80,.06)">
             <div id="elem-detail-icon" class="text-5xl w-16 h-16 flex items-center justify-center rounded bg-surface-container border border-outline"></div>
@@ -738,97 +684,91 @@
           <div class="p-4 grid grid-cols-2 gap-4">
             <div>
               <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-tertiary inline-block"></span> Mengalahkan
+                <span class="w-2 h-2 rounded-full bg-tertiary inline-block"></span> Beats
               </div>
               <div id="elem-beats" class="flex flex-col gap-1.5"></div>
             </div>
             <div>
               <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-error inline-block"></span> Dikalahkan oleh
+                <span class="w-2 h-2 rounded-full bg-error inline-block"></span> Loses To
               </div>
               <div id="elem-loses" class="flex flex-col gap-1.5"></div>
             </div>
           </div>
-          <!-- Win reason rows -->
           <div class="border-t border-outline-variant p-4">
-            <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-2">Alasan Kemenangan</div>
+            <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-2">Win Reasons</div>
             <div id="elem-reasons" class="flex flex-col gap-1.5"></div>
           </div>
         </div>
       </div>
 
-      <!-- TAB: MODES -->
       <div id="tab-modes" class="info-tab hidden p-6 flex flex-col gap-4">
-        <!-- Points mode -->
         <div class="bg-surface-container rounded-lg border border-outline-variant overflow-hidden">
           <div class="flex items-center gap-3 px-4 py-3 border-b border-outline-variant" style="background:rgba(242,202,80,.05)">
             <span class="text-2xl">🏆</span>
             <div>
-              <div class="font-display text-base text-primary uppercase tracking-widest">Rebutan Poin</div>
+              <div class="font-display text-base text-primary uppercase tracking-widest">Point Rush</div>
               <div class="text-xs text-on-surface-variant">Best-of-7 · 1v1 + Bot</div>
             </div>
-            <span class="ml-auto px-2 py-0.5 rounded text-xs bg-primary/15 border border-primary/30 text-primary uppercase tracking-wider">Klasik</span>
+            <span class="ml-auto px-2 py-0.5 rounded text-xs bg-primary/15 border border-primary/30 text-primary uppercase tracking-wider">Classic</span>
           </div>
           <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div class="flex gap-2"><span class="text-primary">▸</span><span class="text-on-surface-variant">Siapa pertama capai <strong class="text-on-surface">4 poin</strong> menang</span></div>
-            <div class="flex gap-2"><span class="text-primary">▸</span><span class="text-on-surface-variant">Menang ronde = <strong class="text-on-surface">+1 poin</strong></span></div>
-            <div class="flex gap-2"><span class="text-primary">▸</span><span class="text-on-surface-variant">Bot mengisi jika bermain solo</span></div>
+            <div class="flex gap-2"><span class="text-primary">▸</span><span class="text-on-surface-variant">First to reach <strong class="text-on-surface">4 points</strong> wins</span></div>
+            <div class="flex gap-2"><span class="text-primary">▸</span><span class="text-on-surface-variant">Win round = <strong class="text-on-surface">+1 point</strong></span></div>
+            <div class="flex gap-2"><span class="text-primary">▸</span><span class="text-on-surface-variant">Bots fill if playing solo</span></div>
           </div>
         </div>
 
-        <!-- Lives mode -->
         <div class="bg-surface-container rounded-lg border border-outline-variant overflow-hidden">
           <div class="flex items-center gap-3 px-4 py-3 border-b border-outline-variant" style="background:rgba(255,180,171,.05)">
             <span class="text-2xl">❤️</span>
             <div>
-              <div class="font-display text-base text-error uppercase tracking-widest">Eliminasi Nyawa</div>
+              <div class="font-display text-base text-error uppercase tracking-widest">Lives Elimination</div>
               <div class="text-xs text-on-surface-variant">Survival · 1v1 + Bot</div>
             </div>
             <span class="ml-auto px-2 py-0.5 rounded text-xs bg-error/10 border border-error/30 text-error uppercase tracking-wider">Survival</span>
           </div>
           <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div class="flex gap-2"><span class="text-error">▸</span><span class="text-on-surface-variant">Setiap pemain mulai dengan <strong class="text-on-surface">3 HP</strong></span></div>
-            <div class="flex gap-2"><span class="text-error">▸</span><span class="text-on-surface-variant">Kalah ronde = <strong class="text-on-surface">-1 HP</strong></span></div>
-            <div class="flex gap-2"><span class="text-error">▸</span><span class="text-on-surface-variant">HP = 0 → eliminasi / spectator</span></div>
+            <div class="flex gap-2"><span class="text-error">▸</span><span class="text-on-surface-variant">Each player starts with <strong class="text-on-surface">3 HP</strong></span></div>
+            <div class="flex gap-2"><span class="text-error">▸</span><span class="text-on-surface-variant">Lose round = <strong class="text-on-surface">-1 HP</strong></span></div>
+            <div class="flex gap-2"><span class="text-error">▸</span><span class="text-on-surface-variant">HP = 0 → eliminated / spectator</span></div>
           </div>
         </div>
 
-        <!-- Cup mode -->
         <div class="bg-surface-container rounded-lg border border-primary/25 overflow-hidden" style="box-shadow:0 0 15px rgba(242,202,80,.07)">
           <div class="flex items-center gap-3 px-4 py-3 border-b border-primary/20" style="background:rgba(242,202,80,.08)">
             <span class="text-2xl">🏅</span>
             <div>
               <div class="font-display text-base text-primary uppercase tracking-widest">Cup Mode</div>
-              <div class="text-xs text-on-surface-variant">Turnamen Bracket 8 Slot</div>
+              <div class="text-xs text-on-surface-variant">8-Slot Tournament Bracket</div>
             </div>
             <span class="ml-auto px-2 py-0.5 rounded text-xs bg-primary/20 border border-primary/40 text-primary uppercase tracking-wider glow-gold">Premium</span>
           </div>
           <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div class="flex gap-2"><span class="text-primary">▸</span><span class="text-on-surface-variant">Maks <strong class="text-on-surface">8 pemain</strong> per sesi</span></div>
-            <div class="flex gap-2"><span class="text-primary">▸</span><span class="text-on-surface-variant">Format <strong class="text-on-surface">single elimination bracket</strong></span></div>
-            <div class="flex gap-2"><span class="text-primary">▸</span><span class="text-on-surface-variant">Duel 1v1 sistem HP sampai final</span></div>
+            <div class="flex gap-2"><span class="text-primary">▸</span><span class="text-on-surface-variant">Max <strong class="text-on-surface">8 players</strong> per session</span></div>
+            <div class="flex gap-2"><span class="text-primary">▸</span><span class="text-on-surface-variant">Format is <strong class="text-on-surface">single elimination bracket</strong></span></div>
+            <div class="flex gap-2"><span class="text-primary">▸</span><span class="text-on-surface-variant">1v1 HP system duels until the finals</span></div>
           </div>
-          <!-- Bracket illustration -->
           <div class="px-4 pb-4">
             <div class="bg-surface-dim rounded p-3 border border-outline-variant text-xs text-on-surface-variant font-mono">
               <div class="flex gap-4 overflow-x-auto pb-1">
                 <div class="flex flex-col gap-3 flex-shrink-0">
-                  <div class="text-primary uppercase tracking-wider mb-1 text-center">Perempat Final</div>
-                  <div class="flex flex-col gap-1"><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Pemain A</div><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Pemain B</div></div>
-                  <div class="flex flex-col gap-1"><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Pemain C</div><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Pemain D</div></div>
-                  <div class="flex flex-col gap-1"><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Pemain E</div><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Pemain F</div></div>
-                  <div class="flex flex-col gap-1"><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Pemain G</div><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Pemain H</div></div>
+                  <div class="text-primary uppercase tracking-wider mb-1 text-center">Quarter Finals</div>
+                  <div class="flex flex-col gap-1"><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Player A</div><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Player B</div></div>
+                  <div class="flex flex-col gap-1"><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Player C</div><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Player D</div></div>
+                  <div class="flex flex-col gap-1"><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Player E</div><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Player F</div></div>
+                  <div class="flex flex-col gap-1"><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Player G</div><div class="px-2 py-1 bg-surface-container rounded border border-outline-variant">Player H</div></div>
                 </div>
                 <div class="flex flex-col justify-around flex-shrink-0 text-outline">→ → →</div>
                 <div class="flex flex-col gap-6 justify-around flex-shrink-0">
-                  <div class="text-primary uppercase tracking-wider text-center mb-1">Semi Final</div>
-                  <div class="px-2 py-1 bg-surface-container rounded border border-primary/30 text-primary">Pemenang AB</div>
-                  <div class="px-2 py-1 bg-surface-container rounded border border-primary/30 text-primary">Pemenang CD</div>
+                  <div class="text-primary uppercase tracking-wider text-center mb-1">Semi Finals</div>
+                  <div class="px-2 py-1 bg-surface-container rounded border border-primary/30 text-primary">Winner AB</div>
+                  <div class="px-2 py-1 bg-surface-container rounded border border-primary/30 text-primary">Winner CD</div>
                 </div>
                 <div class="flex flex-col justify-around flex-shrink-0 text-outline">→ →</div>
                 <div class="flex flex-col justify-center flex-shrink-0">
                   <div class="text-primary uppercase tracking-wider text-center mb-1">Final</div>
-                  <div class="px-3 py-2 bg-primary/20 rounded border border-primary text-primary font-bold text-center glow-gold">🏆 JUARA</div>
+                  <div class="px-3 py-2 bg-primary/20 rounded border border-primary text-primary font-bold text-center glow-gold">🏆 CHAMPION</div>
                 </div>
               </div>
             </div>
@@ -836,12 +776,9 @@
         </div>
       </div>
 
-    </div><!-- end scrollable -->
-
-    <!-- Footer -->
-    <div class="flex-shrink-0 border-t border-outline-variant px-6 py-3 flex items-center justify-between bg-surface-container/50">
-      <div class="text-xs text-on-surface-variant">Tap elemen di tab "7 Elemen" untuk melihat detail interaksi</div>
-      <button onclick="closeGameInfo()" class="px-4 py-2 rounded border border-outline text-on-surface-variant text-xs hover:border-primary hover:text-primary transition-all uppercase tracking-widest">Tutup</button>
+    </div><div class="flex-shrink-0 border-t border-outline-variant px-6 py-3 flex items-center justify-between bg-surface-container/50">
+      <div class="text-xs text-on-surface-variant">Tap elements in the "7 Elements" tab to see interaction details</div>
+      <button onclick="closeGameInfo()" class="px-4 py-2 rounded border border-outline text-on-surface-variant text-xs hover:border-primary hover:text-primary transition-all uppercase tracking-widest">Close</button>
     </div>
   </div>
 </div>
@@ -883,79 +820,79 @@
   const ELEM_DATA = [
     {
       name:"Rock", icon:"🪨", color:"#94a3b8",
-      desc:"Batu purba yang kokoh — simbol ketahanan dan kekuatan mentah.",
+      desc:"Solid ancient stone — a symbol of endurance and raw strength.",
       beats:["Fire","Scissors","Sponge"],
       loses:["Paper","Air","Water"],
       reasons:{
-        "Fire":"Batu memadamkan Api dengan menghancurkan bara.",
-        "Scissors":"Batu menghancurkan Gunting dengan kekerasannya.",
-        "Sponge":"Batu meremukkan Spons secara fisik.",
+        "Fire":"Rock extinguishes Fire by crushing its embers.",
+        "Scissors":"Rock breaks Scissors with its hardness.",
+        "Sponge":"Rock physically crushes Sponge.",
       }
     },
     {
       name:"Fire", icon:"🔥", color:"#f97316",
-      desc:"Api alkimia yang membakar segala yang lunak dan tajam.",
+      desc:"Alchemical flame that burns anything soft and sharp.",
       beats:["Scissors","Sponge","Paper"],
       loses:["Rock","Air","Water"],
       reasons:{
-        "Scissors":"Api melelehkan logam Gunting.",
-        "Sponge":"Api membakar Spons habis-habisan.",
-        "Paper":"Api menghanguskan Kertas seketika.",
+        "Scissors":"Fire melts Scissors' metal.",
+        "Sponge":"Fire burns Sponge to ashes.",
+        "Paper":"Fire instantly incinerates Paper.",
       }
     },
     {
       name:"Scissors", icon:"✂️", color:"#e2e8f0",
-      desc:"Gunting tajam yang memotong segala yang lembut dan ringan.",
+      desc:"Sharp scissors that cut anything soft and light.",
       beats:["Sponge","Paper","Air"],
       loses:["Rock","Fire","Water"],
       reasons:{
-        "Sponge":"Gunting memotong Spons menjadi potongan kecil.",
-        "Paper":"Gunting memotong Kertas dengan mudah.",
-        "Air":"Gunting memotong arus Udara, membelah alirannya.",
+        "Sponge":"Scissors cut Sponge into tiny pieces.",
+        "Paper":"Scissors easily slice through Paper.",
+        "Air":"Scissors slice through the Air, splitting its currents.",
       }
     },
     {
       name:"Sponge", icon:"🧽", color:"#f2ca50",
-      desc:"Spons menyerap semua — hanya dilemahkan oleh yang lebih keras dan tajam.",
+      desc:"Sponge absorbs all — only weakened by the hard and sharp.",
       beats:["Paper","Air","Water"],
       loses:["Rock","Fire","Scissors"],
       reasons:{
-        "Paper":"Spons menyerap tinta dan merusak Kertas.",
-        "Air":"Spons menangkap Udara dan memadatkannya.",
-        "Water":"Spons menyerap Air sepenuhnya.",
+        "Paper":"Sponge absorbs ink and ruins Paper.",
+        "Air":"Sponge traps Air and compresses it.",
+        "Water":"Sponge completely absorbs Water.",
       }
     },
     {
       name:"Paper", icon:"📄", color:"#38bdf8",
-      desc:"Kertas — lambang pengetahuan yang mengikat bahkan batu sekalipun.",
+      desc:"Paper — a symbol of knowledge that binds even stone.",
       beats:["Air","Water","Rock"],
       loses:["Fire","Scissors","Sponge"],
       reasons:{
-        "Air":"Kertas membungkus dan mengikat Udara.",
-        "Water":"Kertas menyerap Air dan mendistorsi alirannya.",
-        "Rock":"Kertas membungkus Batu — simbol penguasaan.",
+        "Air":"Paper wraps and binds Air.",
+        "Water":"Paper absorbs Water and distorts its flow.",
+        "Rock":"Paper covers Rock — a symbol of mastery.",
       }
     },
     {
       name:"Air", icon:"💨", color:"#a78bfa",
-      desc:"Udara tak terlihat namun melingkupi segalanya — melemahkan api dan batu.",
+      desc:"Invisible Air that surrounds everything — weakening fire and stone.",
       beats:["Water","Rock","Fire"],
       loses:["Scissors","Sponge","Paper"],
       reasons:{
-        "Water":"Udara menguapkan Air menjadi uap.",
-        "Rock":"Udara mengikis Batu perlahan namun pasti.",
-        "Fire":"Udara memadamkan Api (tanpa bahan bakar).",
+        "Water":"Air evaporates Water into mist.",
+        "Rock":"Air slowly but surely erodes Rock.",
+        "Fire":"Air blows out Fire (without fuel).",
       }
     },
     {
       name:"Water", icon:"💧", color:"#06b6d4",
-      desc:"Air mengalir menembus segala rintangan — pembasmi api dan logam.",
+      desc:"Water flows through all obstacles — destroyer of fire and metal.",
       beats:["Rock","Fire","Scissors"],
       loses:["Sponge","Paper","Air"],
       reasons:{
-        "Rock":"Air mengikis dan melubangi Batu seiring waktu.",
-        "Fire":"Air memadamkan Api secara langsung.",
-        "Scissors":"Air berkarat dan melemahkan logam Gunting.",
+        "Rock":"Water erodes and hollows out Rock over time.",
+        "Fire":"Water directly extinguishes Fire.",
+        "Scissors":"Water rusts and weakens Scissors' metal.",
       }
     },
   ];

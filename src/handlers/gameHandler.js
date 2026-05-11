@@ -69,7 +69,7 @@ function createGameService({ io, matches }) {
     const pIds = shuffled.map(p => p.user_id);
 
     match.cup_bracket = {
-      round: 1, label: "Putaran 1", slots: pIds, active_p1: pIds[0], active_p2: pIds[1],
+      round: 1, label: "Round 1", slots: pIds, active_p1: pIds[0], active_p2: pIds[1],
       schedule: [
         { id: 1, r: 1, p1: pIds[0], p2: pIds[1], w: null },
         { id: 2, r: 1, p1: pIds[2], p2: pIds[3], w: null },
@@ -103,7 +103,7 @@ function createGameService({ io, matches }) {
 
       if (cm) {
           bracket.round = cm.r;
-          bracket.label = cm.r === 1 ? "Putaran 1" : cm.r === 2 ? "Semifinal" : "Grand Final";
+          bracket.label = cm.r === 1 ? "Round 1" : cm.r === 2 ? "Semifinal" : "Grand Final";
           bracket.active_p1 = cm.p1;
           bracket.active_p2 = cm.p2;
       } else {
@@ -285,7 +285,7 @@ function createGameService({ io, matches }) {
         p.lives = Math.max(0, p.lives - 1);
         if (p.lives <= 0) {
           p.eliminated = true; p.is_spectator = true;
-          if (!p.is_bot && p.socket_id) io.to(p.socket_id).emit("game:eliminated", { message: "Nyawamu habis! Kamu sekarang menonton." });
+          if (!p.is_bot && p.socket_id) io.to(p.socket_id).emit("game:eliminated", { message: "You are out of lives! Now watching." });
         }
       });
     }
@@ -334,7 +334,7 @@ function createGameService({ io, matches }) {
     socket.on("game:choose", ({ match_id, user_id, element }) => {
       const match = getMatch(matches, match_id);
       if (!match || match.status !== "selection") return;
-      if (!ELEMENTS.includes(element)) return socket.emit("error", { message: "Elemen tidak valid" });
+      if (!ELEMENTS.includes(element)) return socket.emit("error", { message: "Invalid element" });
       const p = match.participants.get(user_id);
       if (!p || p.is_spectator || p.eliminated || p.is_bot) return;
       

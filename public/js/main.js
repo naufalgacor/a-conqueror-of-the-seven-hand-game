@@ -17,7 +17,7 @@ function toggleMusic() {
     isMusicPlaying = false;
     if(icon) icon.textContent = "🔇";
   } else {
-    bgm.play().catch((e) => console.log("Autoplay diblokir", e));
+    bgm.play().catch((e) => console.log("Autoplay blocked", e));
     isMusicPlaying = true;
     if(icon) icon.textContent = "🎵";
   }
@@ -50,15 +50,15 @@ const ELEMENTS = [
 ];
 
 const MODE_LABELS = {
-  points: "🏆 Rebutan Poin",
-  lives: "❤️ Eliminasi Nyawa",
+  points: "🏆 Point Rush",
+  lives: "❤️ Lives Elimination",
   cup: "🏅 Cup Mode",
 };
 
 const MODE_INFO = {
-  points: "1v1 · Best-of-7 · Siapa pertama capai 4 poin menang · Bot mengisi jika solo",
-  lives: "1v1 · 3 HP · Kalah ronde = -1 HP · Bot mengisi jika solo",
-  cup: "Turnamen Bracket 8-Slot · Eliminasi HP",
+  points: "1v1 · Best-of-7 · First to 4 points wins · Bots fill if solo",
+  lives: "1v1 · 3 HP · Lose round = -1 HP · Bots fill if solo",
+  cup: "8-Slot Tournament Bracket · HP Elimination",
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -83,7 +83,7 @@ const socket = createSocketClient({
 // ─────────────────────────────────────────────────────────────
 async function createLobby() {
   const username = document.getElementById("input-username").value.trim();
-  if (!username) return ui.showError("Masukkan nama kamu dulu!");
+  if (!username) return ui.showError("Please enter your name first!");
 
   try {
     const res = await fetch("/api/v1/lobby", {
@@ -93,7 +93,7 @@ async function createLobby() {
     });
 
     const data = await res.json();
-    if (!res.ok) return ui.showError(data.error || "Gagal membuat lobby");
+    if (!res.ok) return ui.showError(data.error || "Failed to create lobby");
 
     state.userId = data.user_id;
     state.matchId = data.match_id;
@@ -102,15 +102,15 @@ async function createLobby() {
 
     enterLobby();
   } catch {
-    ui.showError("Server tidak bisa dijangkau");
+    ui.showError("Server unreachable");
   }
 }
 
 async function joinLobbyById() {
   const username = document.getElementById("input-username").value.trim();
   const lobbyId = document.getElementById("input-lobby-id").value.trim();
-  if (!username) return ui.showError("Masukkan nama kamu dulu!");
-  if (!lobbyId) return ui.showError("Masukkan Lobby ID!");
+  if (!username) return ui.showError("Please enter your name first!");
+  if (!lobbyId) return ui.showError("Please enter Lobby ID!");
 
   await joinLobbyByIdStr(username, lobbyId);
 }
@@ -124,7 +124,7 @@ async function joinLobbyByIdStr(username, lobbyId) {
     });
 
     const data = await res.json();
-    if (!res.ok) return ui.showError(data.error || "Gagal bergabung");
+    if (!res.ok) return ui.showError(data.error || "Failed to join");
 
     state.userId = data.user_id;
     state.matchId = data.match_id;
@@ -133,20 +133,20 @@ async function joinLobbyByIdStr(username, lobbyId) {
 
     enterLobby();
   } catch {
-    ui.showError("Server tidak bisa dijangkau");
+    ui.showError("Server unreachable");
   }
 }
 
 async function loadLobbies() {
   const listEl = document.getElementById("lobby-list");
-  listEl.innerHTML = `<div class="text-slate-600 text-xs text-center py-2">Memuat...</div>`;
+  listEl.innerHTML = `<div class="text-slate-600 text-xs text-center py-2">Loading...</div>`;
 
   try {
     const res = await fetch("/api/v1/lobbies");
     const data = await res.json();
 
     if (!data.lobbies?.length) {
-      listEl.innerHTML = `<div class="text-slate-600 text-xs text-center py-3">Tidak ada lobby terbuka</div>`;
+      listEl.innerHTML = `<div class="text-slate-600 text-xs text-center py-3">No open lobbies</div>`;
       return;
     }
 
@@ -175,13 +175,13 @@ async function loadLobbies() {
       })
       .join("");
   } catch {
-    listEl.innerHTML = `<div class="text-slate-600 text-xs text-center">Gagal memuat</div>`;
+    listEl.innerHTML = `<div class="text-slate-600 text-xs text-center">Failed to load</div>`;
   }
 }
 
 function joinFromList(lobbyId) {
   const username = document.getElementById("input-username").value.trim();
-  if (!username) return ui.showError("Masukkan nama kamu dulu!");
+  if (!username) return ui.showError("Please enter your name first!");
   joinLobbyByIdStr(username, lobbyId);
 }
 
@@ -196,14 +196,14 @@ function enterLobby() {
 
   socket.emit("lobby:join", { match_id: state.matchId, user_id: state.userId });
 
-  // --- TRIGGER MUSIK SAAT MASUK LOBBY ---
+// --- TRIGGER MUSIC WHEN ENTERING LOBBY ---
   if (!isMusicPlaying) {
     bgm.play().then(() => {
       isMusicPlaying = true;
       const icon = document.getElementById("music-icon");
       if(icon) icon.textContent = "🎵";
     }).catch(err => {
-      console.log("Menunggu interaksi user untuk memutar musik", err);
+      console.log("Waiting for user interaction to play music", err);
     });
   }
 }
@@ -245,7 +245,7 @@ function resetState() {
     myChoice: null,
     currentPhase: "waiting",
     modeConfig: null,
-    lastWinnerId: null, // Reset gelar saat keluar
+    lastWinnerId: null, 
   });
 
   ui.setLobbyLeftUI();
@@ -265,7 +265,7 @@ async function updateGameMode(mode) {
 
   if (!res.ok) {
     const d = await res.json();
-    ui.showToast("❌ " + (d.error || "Gagal mengubah mode"));
+    ui.showToast("❌ " + (d.error || "Failed to change mode"));
   }
 }
 
@@ -279,7 +279,7 @@ async function startGame() {
   });
 
   const data = await res.json();
-  if (!res.ok) ui.showToast("❌ " + (data.error || "Gagal memulai"));
+  if (!res.ok) ui.showToast("❌ " + (data.error || "Failed to start"));
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -301,7 +301,7 @@ function sendChat() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// EXPOSE TO WINDOW (Penting agar HTML bisa memanggil fungsi ini)
+// EXPOSE TO WINDOW 
 // ─────────────────────────────────────────────────────────────
 window.createLobby = createLobby;
 window.joinLobbyById = joinLobbyById;

@@ -37,7 +37,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
         btn.classList.add("copy-btn-success");
         icon.textContent = "✅";
         label.textContent = "Tersalin!";
-        showToast("✅ Lobby ID berhasil disalin!");
+        showToast("✅ Lobby ID successfully copied!");
         setTimeout(() => {
           btn.classList.remove("copy-btn-success");
           icon.textContent = "📋";
@@ -54,7 +54,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
         btn.classList.add("copy-btn-success");
         icon.textContent = "✅";
         label.textContent = "Tersalin!";
-        showToast("✅ Lobby ID disalin (fallback)");
+        showToast("✅ Lobby ID copied (fallback)");
         setTimeout(() => {
           btn.classList.remove("copy-btn-success");
           icon.textContent = "📋";
@@ -104,7 +104,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     const botCount = match.participants.filter((p) => p.is_bot).length;
     const maxP = match.mode_config?.maxPlayers || "?";
     document.getElementById("lobby-player-count").textContent =
-      `${humanCount}/${maxP} Pemain${botCount > 0 ? ` + ${botCount} Bot` : ""}`;
+      `${humanCount}/${maxP} Players${botCount > 0 ? ` + ${botCount} Bots` : ""}`;
 
     const modeInfo = MODE_INFO[match.mode] || "";
     document.getElementById("current-mode-display").textContent =
@@ -135,7 +135,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
               modeSelect.classList.add("opacity-50", "cursor-not-allowed");
               
               if (modeBadge) {
-                  modeBadge.textContent = "🔒 Terkunci! Sisakan 2 pemain untuk ganti mode (Keluar atau Kick).";
+                  modeBadge.textContent = "🔐 Locked! Keep only 2 players to change mode (Leave or Kick).";
                   modeBadge.classList.add("text-red-400"); 
               }
           } else {
@@ -202,7 +202,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
             ${titleHtml}${p.username}${isMe ? " (Kamu)" : ""}${isBot ? " 🤖" : ""}
           </div>
           ${winnerBadgeHtml} <div class="text-xs text-slate-600 mt-0.5">
-            ${isLeader && !isBot ? "👑 Leader" : p.is_spectator ? "👁 Spectator" : isBot ? "Auto" : "Pemain"}
+            ${isLeader && !isBot ? "👑 Leader" : p.is_spectator ? "👁 Spectator" : isBot ? "Auto" : "Player"}
             ${match.status !== "waiting" ? ` · 🏅${p.points} · ❤️${p.lives}` : ""}
           </div>
         </div>
@@ -269,7 +269,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
       const bar     = document.getElementById("cup-popup-bar");
       if (!popup) return;
 
-      label.textContent = currentMatchData?.id ? `Match ${currentMatchData.id}` : "Match Sekarang";
+      label.textContent = currentMatchData?.id ? `Match ${currentMatchData.id}` : "Current Match";
 
       fighters.innerHTML = `
         <div class="flex-1 text-center">
@@ -332,11 +332,11 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
           const p2Cls = isFinished && !p2Won ? "text-slate-500 line-through" : p2Won ? "text-neon-gold font-bold" : "text-slate-200";
 
           let badge = "";
-          if (isActive)    badge = `<span class="text-[9px] text-neon-cyan animate-pulse">⚔️ Berduel</span>`;
+          if (isActive)    badge = `<span class="text-[9px] text-neon-cyan animate-pulse">⚔️ Fighting</span>`;
           else if (isFinished) {
               const wn = match.participants.find(x => x.user_id === m.w)?.username || "";
               badge = `<span class="text-[9px] text-neon-gold">🏆 ${wn}</span>`;
-          } else badge = `<span class="text-[9px] text-slate-600">⏳ Menunggu</span>`;
+          } else badge = `<span class="text-[9px] text-slate-600">⏳ Waiting</span>`;
 
           return `
           <div class="rounded-lg px-2.5 py-2 ${cardClass} transition-all">
@@ -443,11 +443,11 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
   function setPhaseUI(phase, labelOverride) {
     state.currentPhase = phase;
     const map = {
-      selection: ["PILIH SEKARANG!", "text-neon-cyan text-glow-cyan"],
-      resolving: ["RESOLUSI...", "text-neon-pink text-glow-pink"],
-      result: ["HASIL RONDE", "text-neon-gold text-glow-gold"],
-      waiting: ["Menunggu...", "text-slate-400"],
-      finished: ["SELESAI", "text-neon-green text-glow-green"],
+      selection: ["CHOOSE NOW!", "text-neon-cyan text-glow-cyan"],
+      resolving: ["RESOLVING...", "text-neon-pink text-glow-pink"],
+      result: ["ROUND RESULT", "text-neon-gold text-glow-gold"],
+      waiting: ["Waiting...", "text-slate-400"],
+      finished: ["FINISHED", "text-neon-green text-glow-green"],
     };
     const [label, cls] = map[phase] || map.waiting;
     const el = document.getElementById("phase-label");
@@ -459,10 +459,10 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
   function showResultBanner(result, choice) {
     const banner = document.getElementById("result-banner");
     const cfgs = {
-      win: { icon: "🏆", text: "MENANG!", bg: "bg-neon-green/10 border border-neon-green/40", tc: "text-neon-green text-glow-green" },
-      lose: { icon: "💀", text: "KALAH", bg: "bg-red-900/20 border border-red-800/40", tc: "text-red-400" },
-      draw: { icon: "🤝", text: "SERI", bg: "bg-neon-gold/10 border border-neon-gold/40", tc: "text-neon-gold text-glow-gold" },
-      spectate: { icon: "👁", text: "MENONTON", bg: "bg-slate-800/40 border border-slate-600", tc: "text-slate-400"}
+      win: { icon: "🏆", text: "WIN!", bg: "bg-neon-green/10 border border-neon-green/40", tc: "text-neon-green text-glow-green" },
+      lose: { icon: "💪", text: "LOSE", bg: "bg-red-900/20 border border-red-800/40", tc: "text-red-400" },
+      draw: { icon: "🤝", text: "DRAW", bg: "bg-neon-gold/10 border border-neon-gold/40", tc: "text-neon-gold text-glow-gold" },
+      spectate: { icon: "👁", text: "SPECTATING", bg: "bg-slate-800/40 border border-slate-600", tc: "text-slate-400"}
     };
     const cfg = cfgs[result] || cfgs.draw;
 
@@ -475,7 +475,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     textEl.className = `font-display text-xl ${cfg.tc}`;
     textEl.textContent = cfg.text;
 
-    document.getElementById("result-detail").textContent = choice ? `Memilih: ${choice}` : "";
+    document.getElementById("result-detail").textContent = choice ? `Chose: ${choice}` : "";
 
     if (result === "win") spawnParticles();
   }
@@ -493,10 +493,10 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
 
     document.getElementById("game-over-emoji").textContent =
       isWinner ? "🏆" : data.winner_id ? "🎮" : "🤝";
-    document.getElementById("game-over-title").textContent = isWinner ? "KAMU MENANG!" : "PERMAINAN SELESAI";
+    document.getElementById("game-over-title").textContent = isWinner ? "YOU WIN!" : "GAME FINISHED";
     document.getElementById("game-over-winner").textContent = winner
-      ? `Pemenang: ${winner.username}${winner.is_bot ? " 🤖" : ""}`
-      : "Hasil Imbang";
+      ? `Winner: ${winner.username}${winner.is_bot ? " 🤖" : ""}`
+      : "Draw";
 
     if (data.participants) {
       const sorted = [...data.participants].sort((a, b) => {
@@ -508,8 +508,8 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
         <table class="w-full text-sm">
           <thead><tr class="border-b border-slate-800">
             <th class="px-3 py-2 text-xs text-slate-500 text-left">#</th>
-            <th class="px-3 py-2 text-xs text-slate-500 text-left">Pemain</th>
-            <th class="px-3 py-2 text-xs text-slate-500 text-center">Poin</th>
+            <th class="px-3 py-2 text-xs text-slate-500 text-left">Player</th>
+            <th class="px-3 py-2 text-xs text-slate-500 text-center">Points</th>
             <th class="px-3 py-2 text-xs text-slate-500 text-center">HP</th>
           </tr></thead>
           <tbody>${sorted
@@ -606,13 +606,13 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
   }
 
   function setGameStartedUI({ mode }) {
-    showToast(`🚀 Game mulai! Mode: ${MODE_LABELS[mode] || mode}`, 4000);
+    showToast(`🚀 Game started! Mode: ${MODE_LABELS[mode] || mode}`, 4000);
     document.getElementById("waiting-screen").classList.add("hidden");
     document.getElementById("game-over-screen").classList.add("hidden");
     document.getElementById("game-board").classList.remove("hidden");
     document.getElementById("leader-panel").classList.add("hidden");
     hideResultBanner();
-    appendSystem("─── Permainan dimulai! ───");
+      appendSystem("─── Game started! ───");
   }
 
   function setLobbyLeftUI() {
@@ -635,7 +635,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
      clearTimeout(_cupPopupTimer);
      document.getElementById("cup-match-popup")?.classList.add("hidden");
      hideResultBanner();
-     appendSystem("♻️ Lobi di-reset oleh Leader. Siap main lagi!");
+     appendSystem("♻️ Lobby reset by Leader. Ready to play again!");
   }
 
   return {

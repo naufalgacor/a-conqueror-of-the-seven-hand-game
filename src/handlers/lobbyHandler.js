@@ -146,7 +146,7 @@ function registerLobbyHandlers({ io, socket, matches, users, gameService }) {
       if (targetSocketId) {
         const targetSocket = io.sockets.sockets.get(targetSocketId);
         if (targetSocket) {
-          targetSocket.emit("lobby:kicked", { message: "Kamu dikeluarkan dari lobi oleh Leader." });
+          targetSocket.emit("lobby:kicked", { message: "You are kicked by the leader." });
           targetSocket.leave(match_id);
         }
         users.delete(targetSocketId);
