@@ -1,16 +1,5 @@
-/**
- * Seven-Hand Game — Rules
- *
- * Exported as a small, reusable module so both REST handlers and
- * Socket.io handlers can rely on a single source of truth.
- */
-
 const ELEMENTS = ["Rock", "Fire", "Scissors", "Sponge", "Paper", "Air", "Water"];
 
-/**
- * Win matrix — WINS[a] = array of elements that 'a' beats.
- * Each element beats exactly 3 others.
- */
 const WINS = {
   Rock:     ["Scissors", "Fire",   "Sponge"],
   Fire:     ["Scissors", "Sponge", "Paper"],
@@ -27,57 +16,33 @@ function beats(a, b) {
 
 /**
  * resolveChoices(choices)
- *
- * @param {Array<{userId: string, element: string}>} choices - only VALID (non-null) choices.
- * @returns {{winners: string[], losers: string[], draw: boolean}}
- *
- * Multi-player resolution:
- * - If everyone picks the same element => draw
- * - Otherwise, winners are players whose element is NOT beaten by any other
- *   element present in this round.
- * - If no such element exists (cycle) => draw
+ * Dioptimalkan khusus untuk 1v1 (2 Pemain).
  */
 function resolveChoices(choices) {
-  if (!Array.isArray(choices) || choices.length === 0) {
-    return { winners: [], losers: [], draw: true };
+  if (!Array.isArray(choices) || choices.length < 2) {
+    return { winners: choices.map(c => c.userId), losers: [], draw: true };
   }
 
-  const elements = choices.map((c) => c.element);
-  const unique = [...new Set(elements)];
+  const p1 = choices[0];
+  const p2 = choices[1];
 
-  if (unique.length === 1) {
-    return { winners: choices.map((c) => c.userId), losers: [], draw: true };
+  // Skenario 1: Seri (Elemen sama)
+  if (p1.element === p2.element) {
+    return { winners: [p1.userId, p2.userId], losers: [], draw: true };
   }
 
-  // Mark elements that are beaten by ANY other element in the chosen set.
-  const isBeaten = new Map(unique.map((el) => [el, false]));
-
-  for (const el of unique) {
-    for (const other of unique) {
-      if (other === el) continue;
-      if (beats(other, el)) {
-        isBeaten.set(el, true);
-        break;
-      }
-    }
+  // Skenario 2: P1 Menang
+  if (beats(p1.element, p2.element)) {
+    return { winners: [p1.userId], losers: [p2.userId], draw: false };
   }
 
-  const winningElements = unique.filter((el) => !isBeaten.get(el));
-
-  if (winningElements.length === 0) {
-    // Full cycle => draw
-    return { winners: choices.map((c) => c.userId), losers: [], draw: true };
+  // Skenario 3: P2 Menang
+  if (beats(p2.element, p1.element)) {
+    return { winners: [p2.userId], losers: [p1.userId], draw: false };
   }
 
-  const winners = choices.filter((c) => winningElements.includes(c.element)).map((c) => c.userId);
-  const losers = choices.filter((c) => !winningElements.includes(c.element)).map((c) => c.userId);
-
-  return { winners, losers, draw: false };
+  // Skenario 4: Fallback (Jika tidak ada yang saling mengalahkan, misal elemen tidak valid)
+  return { winners: [p1.userId, p2.userId], losers: [], draw: true };
 }
 
-module.exports = {
-  ELEMENTS,
-  WINS,
-  beats,
-  resolveChoices,
-};
+module.exports = { ELEMENTS, beats, resolveChoices };

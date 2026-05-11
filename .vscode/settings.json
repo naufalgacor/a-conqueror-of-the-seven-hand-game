@@ -1,8 +1,0 @@
-{
-    "python.analysis.extraPaths": [
-        "/home/shatramaja/.vscode-oss/extensions/continue.continue-0.1.3-universal"
-    ],
-    "python.autoComplete.extraPaths": [
-        "/home/shatramaja/.vscode-oss/extensions/continue.continue-0.1.3-universal"
-    ]
-}

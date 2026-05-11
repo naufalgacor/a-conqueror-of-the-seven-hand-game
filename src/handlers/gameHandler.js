@@ -85,7 +85,6 @@ function createGameService({ io, matches }) {
   
   function advanceCupMatchup(match) {
       let bracket = match.cup_bracket;
-      // PENGAMAN 1: Cegah error undefined schedule
       if (!bracket || !bracket.schedule) return;
 
       let cm = bracket.schedule[bracket.current_match_idx];
@@ -148,7 +147,6 @@ function createGameService({ io, matches }) {
 
     if (match.mode === "cup") {
         let bracket = match.cup_bracket;
-        // PENGAMAN 2: Pastikan data bracket ada sebelum mengecek schedule
         if (!bracket || !bracket.schedule) return false;
         
         let cm = bracket.schedule[bracket.current_match_idx];
@@ -160,7 +158,6 @@ function createGameService({ io, matches }) {
         if (!p1 || p1.eliminated || !p2 || p2.eliminated) {
             cm.w = (!p1 || p1.eliminated) ? bracket.active_p2 : bracket.active_p1;
             
-            // RESET NYAWA
             const winnerOfMatchup = match.participants.get(cm.w);
             if (winnerOfMatchup) {
                 winnerOfMatchup.lives = 3; 
@@ -186,7 +183,6 @@ function createGameService({ io, matches }) {
     match.status = "resolving";
     let roundLabel = match.round.toString();
     
-    // PENGAMAN 3: Cegah crash di penamaan ronde
     if (match.mode === "cup") {
         if (match.cup_bracket && match.cup_bracket.schedule && match.cup_bracket.schedule[match.cup_bracket.current_match_idx]) {
             roundLabel = `${match.cup_bracket.label} (Match ${match.cup_bracket.schedule[match.cup_bracket.current_match_idx].id})`;
@@ -233,7 +229,6 @@ function createGameService({ io, matches }) {
       });
       broadcastLobbyState(io, matchId, match);
       if (!gameOver) {
-          // PENGAMAN 4: Bersihkan timer liar
           if (match.roundTimer) clearTimeout(match.roundTimer);
           match.roundTimer = setTimeout(() => startSelectionPhase(matchId), 2500);
       }
@@ -252,7 +247,6 @@ function createGameService({ io, matches }) {
     let roundLabel = match.round.toString();
     let playersInvolved = [];
     
-    // PENGAMAN 5: Cegah crash pemilihan nama
     if (match.mode === "cup") {
         if (match.cup_bracket && match.cup_bracket.schedule && match.cup_bracket.schedule[match.cup_bracket.current_match_idx]) {
              roundLabel = `${match.cup_bracket.label} (Match ${match.cup_bracket.schedule[match.cup_bracket.current_match_idx].id})`;
@@ -359,7 +353,11 @@ function createGameService({ io, matches }) {
     startSelectionPhase,
     resolveRound,
     registerGameHandlers,
-    forceCheckState
+    forceCheckState,
+    
+    // --- KHUSUS TESTING ---
+    _applyRoundOutcome: applyRoundOutcome,
+    _checkGameOver: checkGameOver
   };
 }
 
