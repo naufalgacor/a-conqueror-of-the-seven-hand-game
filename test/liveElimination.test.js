@@ -1,6 +1,8 @@
 jest.mock('uuid', () => ({ v4: () => 'mock-uuid' }));
 
 const { createGameService } = require('../src/handlers/gameHandler');
+const { createLobbyRouter } = require('../src/routes/lobbyRoutes');
+const { MODE_CONFIG } = require('../src/config/gameConfig');
 
 // Mock Socket.io
 const io = {
@@ -99,5 +101,47 @@ describe('Pengujian Mode Eliminasi Nyawa (Lives Elimination Mode)', () => {
     // Nyawa tetap 0, tidak jadi -1
     expect(p1.lives).toBe(0);
     expect(p1.eliminated).toBe(true);
+  });
+
+  test('Entry limit (lives): tidak dapat join jika sudah mencapai maxPlayers (2)', () => {
+    const localMatches = new Map();
+    const a = createParticipant('a', 3);
+    const b = createParticipant('b', 3);
+    const lobby = { id: 'L1', mode: 'lives', status: 'waiting', leader_id: 'a', participants: new Map([[a.user_id, a], [b.user_id, b]]) };
+    localMatches.set(lobby.id, lobby);
+
+    const router = createLobbyRouter({ io, matches: localMatches, startGame: () => {} });
+    const layer = router.stack.find((l) => l.route && l.route.path === '/lobby/:lobby_id/join');
+    const handler = layer.route.stack[0].handle;
+
+    const req = { params: { lobby_id: 'L1' }, body: { username: 'new' } };
+    let statusCode; let body;
+    const res = { status: (s) => { statusCode = s; return res; }, json: (b) => { body = b; return res; } };
+
+    handler(req, res);
+
+    expect(statusCode).toBe(400);
+    expect(body && body.error).toBe(`Lobby penuh (maks ${MODE_CONFIG.lives.maxPlayers} pemain)`);
+  });
+
+  test('Entry allowed (lives): dapat join jika belum mencapai maxPlayers', () => {
+    const localMatches = new Map();
+    const a = createParticipant('a', 3);
+    const lobby = { id: 'L2', mode: 'lives', status: 'waiting', leader_id: 'a', participants: new Map([[a.user_id, a]]) };
+    localMatches.set(lobby.id, lobby);
+
+    const router = createLobbyRouter({ io, matches: localMatches, startGame: () => {} });
+    const layer = router.stack.find((l) => l.route && l.route.path === '/lobby/:lobby_id/join');
+    const handler = layer.route.stack[0].handle;
+
+    const req = { params: { lobby_id: 'L2' }, body: { username: 'player2' } };
+    let statusCode; let body;
+    const res = { status: (s) => { statusCode = s; return res; }, json: (b) => { body = b; return res; } };
+
+    handler(req, res);
+
+    expect(statusCode).toBe(200);
+    const humanCount = Array.from(localMatches.get('L2').participants.values()).filter((p) => !p.is_bot).length;
+    expect(humanCount).toBe(2);
   });
 });
