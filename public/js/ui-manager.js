@@ -199,7 +199,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
         </div>
         <div class="flex-1 min-w-0">
           <div class="text-sm font-semibold truncate ${isMe ? "text-neon-cyan" : isBot ? "text-slate-500" : "text-slate-200"}">
-            ${titleHtml}${p.username}${isMe ? " (Kamu)" : ""}${isBot ? " 🤖" : ""}
+            ${titleHtml}${p.username}${isMe ? " (You)" : ""}${isBot ? " 🤖" : ""}
           </div>
           ${winnerBadgeHtml} <div class="text-xs text-slate-600 mt-0.5">
             ${isLeader && !isBot ? "👑 Leader" : p.is_spectator ? "👁 Spectator" : isBot ? "Auto" : "Player"}
