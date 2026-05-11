@@ -138,7 +138,38 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
       state.isSpectator = me.is_spectator;
       state.isLeader = match.leader_id === state.userId;
     }
+    if (state.isLeader) {
+      const modeSelect = document.getElementById("mode-select");
+      const modeBadge = document.getElementById("mode-info-badge");
+      
+      if (modeSelect) {
+          modeSelect.value = match.mode;
+          
+          // Hitung total pemain (bisa manusia + bot, atau manusia saja tergantung kebutuhan)
+          const totalPlayers = match.participants.length; 
 
+          if (totalPlayers > 2) {
+              // Kunci dropdown jika pemain > 2
+              modeSelect.disabled = true;
+              modeSelect.classList.add("opacity-50", "cursor-not-allowed");
+              
+              // Ubah teks badge untuk memberi tahu alasan kenapa dikunci
+              if (modeBadge) {
+                  modeBadge.textContent = "🔒 Terkunci! Sisakan 2 pemain untuk ganti mode (Keluar atau Kick).";
+                  modeBadge.classList.add("text-red-400"); // Beri warna merah/peringatan
+              }
+          } else {
+              // Buka kunci jika pemain <= 2
+              modeSelect.disabled = false;
+              modeSelect.classList.remove("opacity-50", "cursor-not-allowed");
+              
+              if (modeBadge) {
+                  modeBadge.textContent = MODE_INFO[match.mode] || "";
+                  modeBadge.classList.remove("text-red-400");
+              }
+          }
+      }
+    }
     const isCupMode = match.mode === "cup" && match.cup_bracket;
     const isGameRunning = match.status !== "waiting" && match.status !== "finished";
     
