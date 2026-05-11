@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "build:css": "npx @tailwindcss/cli -i ./src/input.css -o ./public/css/tailwind.css",
+    "watch:css": "npx @tailwindcss/cli -i ./src/input.css -o ./public/css/tailwind.css --watch",
     "test": "jest"
   },
   "repository": {
@@ -27,7 +29,10 @@
     "uuid": "^14.0.0"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0",
+    "@tailwindcss/forms": "^0.5.11",
     "jest": "^30.4.2",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "tailwindcss": "^4.3.0"
   }
 }
