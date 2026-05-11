@@ -175,8 +175,6 @@
     .glow-red   { box-shadow: 0 0 15px rgba(255,180,171,.4); }
     .glow-cyan  { box-shadow: 0 0 14px rgba(0,245,255,.4),  0 0 36px rgba(0,245,255,.12); }
     .glow-green { box-shadow: 0 0 14px rgba(57,255,20,.4),  0 0 36px rgba(57,255,20,.12); }
-    .alchemical-glow { box-shadow: inset 0 0 20px rgba(242,202,80,.1), 0 0 15px rgba(15,76,129,.2); }
-    .active-rune-glow { box-shadow: 0 0 15px rgba(242,202,80,.6), inset 0 0 10px rgba(212,175,55,.4); }
 
     /* ── Text glows ── */
     .text-glow-gold { text-shadow: 0 0 12px rgba(242,202,80,.8), 0 0 32px rgba(242,202,80,.35); }
@@ -268,8 +266,6 @@
     /* ══════════════════════════════════════════════
        HOME SCREEN — Responsive layout
     ══════════════════════════════════════════════ */
-
-    /* Desktop: 2-column layout for home screen */
     @media (min-width: 1024px) {
       #home-layout {
         display: grid;
@@ -287,72 +283,6 @@
     }
 
     /* ══════════════════════════════════════════════
-       DRAWER SYSTEM
-    ══════════════════════════════════════════════ */
-    .drawer-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 45;
-      background: rgba(0,0,0,.65);
-      backdrop-filter: blur(3px);
-      -webkit-backdrop-filter: blur(3px);
-    }
-    .drawer-backdrop.open { display: block; }
-
-    /* Left drawer — mobile */
-    #drawer-left {
-      position: fixed;
-      top: 0; left: 0; bottom: 0;
-      width: 288px;
-      z-index: 50;
-      background: #1a1c19;
-      border-right: 1px solid rgba(153,144,124,.25);
-      transform: translateX(-100%);
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      padding: 1.25rem;
-      padding-top: calc(1.25rem + env(safe-area-inset-top));
-      padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
-    }
-    #drawer-left.open { transform: translateX(0); }
-
-    /* Right drawer — mobile */
-    #drawer-right {
-      position: fixed;
-      top: 0; right: 0; bottom: 0;
-      width: min(320px, 92vw);
-      z-index: 50;
-      background: #1a1c19;
-      border-left: 1px solid rgba(153,144,124,.25);
-      transform: translateX(100%);
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-      display: flex;
-      flex-direction: column;
-    }
-    #drawer-right.open { transform: translateX(0); }
-
-    /* ── Desktop: drawers become static sidebars ── */
-    @media (min-width: 1024px) {
-      #drawer-left, #drawer-right {
-        position: static;
-        transform: none !important;
-        width: auto;
-        border: none;
-        background: transparent;
-        padding: 0;
-        display: flex;
-        transition: none;
-        overflow-y: visible;
-      }
-      .drawer-backdrop { display: none !important; }
-      #btn-toggle-left, #btn-toggle-right { display: none !important; }
-    }
-
-    /* ══════════════════════════════════════════════
        LOBBY LAYOUT — 3-column grid on desktop
     ══════════════════════════════════════════════ */
     #lobby-columns {
@@ -364,7 +294,6 @@
       align-items: stretch;
     }
 
-    /* Left column */
     #drawer-left.sidebar-left {
       width: var(--sidebar-left-width);
       flex-shrink: 0;
@@ -377,7 +306,6 @@
       overflow-y: auto;
     }
 
-    /* Right column */
     #drawer-right.sidebar-right {
       width: var(--sidebar-right-width);
       flex-shrink: 0;
@@ -387,7 +315,6 @@
       border-left: 1px solid rgba(153,144,124,.18);
     }
 
-    /* Center column */
     #lobby-center {
       flex: 1;
       display: flex;
@@ -398,7 +325,6 @@
       min-width: 0;
     }
 
-    /* Mobile: proper padding and compact mode display */
     @media (max-width: 1023px) {
       #lobby-center {
         padding: 0.625rem;
@@ -413,7 +339,6 @@
       }
     }
 
-    /* ── Ingame players grid — responsive ── */
     #ingame-players {
       display: grid;
       gap: .75rem;
@@ -429,7 +354,6 @@
       #ingame-players { grid-template-columns: repeat(3, 1fr); }
     }
 
-    /* ── Elements grid — horizontal scroll on mobile, grid on wider screens ── */
     #elements-grid {
       display: flex;
       gap: .5rem;
@@ -462,62 +386,18 @@
       }
     }
 
-    /* ── Header height compensation ── */
-    @media (max-width: 1023px) {
-      #drawer-right .chat-input-area {
-        padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
-      }
-      /* Push chat above virtual keyboard using dvh */
-      #drawer-right {
-        height: 100dvh;
-        max-height: 100dvh;
-      }
-    }
-
-    /* ── Chat unread badge ── */
-    #chat-unread-dot {
-      position: absolute;
-      top: 4px; right: 4px;
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #f2ca50;
-    }
-
-    /* ── Result banner ── */
     #result-banner { transition: all .3s ease; }
 
-    /* ── Waiting screen ornament ── */
-    .orbit-ring {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      border: 1px solid rgba(242,202,80,.12);
-    }
+    #vs-overlay { transition: opacity .4s ease; }
+    #vs-overlay.hidden { opacity: 0; pointer-events: none; }
 
-    /* ── Safe area ── */
-    @supports (padding-bottom: env(safe-area-inset-bottom)) {
-      .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
-    }
-
-    /* ── VS Overlay ── */
-    #vs-overlay {
-      transition: opacity .4s ease;
-    }
-    #vs-overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    /* ── VS overlay responsive fixes ── */
     @media (max-width: 479px) {
       #vs-round-label { font-size: 1rem; margin-bottom: 1.25rem; letter-spacing: .15em; }
       #vs-p1-name, #vs-p2-name { font-size: .9rem; }
       #vs-overlay .text-3xl { font-size: 1.75rem; }
     }
 
-    /* ── Cup match popup — bottom banner on mobile, corner on desktop ── */
     #cup-match-popup {
-      /* Mobile default: bottom fluid banner */
       left: 12px !important;
       right: 12px !important;
       bottom: calc(env(safe-area-inset-bottom) + 16px) !important;
@@ -543,31 +423,8 @@
       }
     }
 
-    /* ── Swipe hint for element grid ── */
-    .elem-grid-wrap { position: relative; }
-    .elem-swipe-hint {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 9px;
-      color: rgba(153,144,124,.5);
-      text-transform: uppercase;
-      letter-spacing: .1em;
-      margin-top: 4px;
-      justify-content: center;
-    }
-    @media (min-width: 480px) {
-      .elem-swipe-hint { display: none; }
-    }
-
-    /* ── Info modal scrollbar ── */
-    #info-modal .overflow-y-auto::-webkit-scrollbar { width: 4px; }
-    #info-modal .overflow-y-auto::-webkit-scrollbar-thumb { background: rgba(153,144,124,.3); border-radius: 2px; }
-
-    /* ── Kick modal ── */
     #kick-modal .animate-pop-in { animation: popIn .25s ease-out forwards; }
 
-    /* ── Home page elements showcase ── */
     #elements-showcase-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -575,7 +432,6 @@
       text-align: center;
     }
 
-    /* Rules grid — desktop gets more columns */
     #rules-grid {
       display: grid;
       gap: .75rem;
@@ -588,10 +444,7 @@
       #rules-grid { grid-template-columns: repeat(4, 1fr); }
     }
 
-    /* ── Tooltip for lobby ID on desktop ── */
-    .tooltip {
-      position: relative;
-    }
+    .tooltip { position: relative; }
     .tooltip:hover::after {
       content: attr(data-tip);
       position: absolute;
@@ -608,29 +461,7 @@
       pointer-events: none;
     }
 
-    /* ── Mode select arrow ── */
-    .mode-select-wrap {
-      position: relative;
-    }
-    .mode-select-wrap::after {
-      content: '▾';
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #f2ca50;
-      pointer-events: none;
-      font-size: .85rem;
-    }
-
-    /* ── Smooth transitions for screens ── */
     .screen { transition: opacity .2s ease; }
-
-    /* ── Status bar flex wrap on small ── */
-    @media (max-width: 379px) {
-      #game-status-bar { flex-wrap: wrap; gap: .75rem; }
-      #game-status-bar > * { flex: 1 1 45%; }
-    }
   </style>
 </head>
 
@@ -638,48 +469,36 @@
 
 <div id="screen-home" class="screen active flex-col items-center justify-center min-h-screen p-6 gap-8">
 
-  <div class="text-center">
+  <div class="text-center" id="home-title-block">
     <span class="font-display text-5xl md:text-6xl font-bold text-white tracking-widest mb-2 uppercase">A Conqueror of the</span>
     <div class="font-display text-5xl md:text-6xl font-bold text-primary text-glow-gold tracking-widest mb-2 uppercase">
       Seven-Hand Game
     </div>
-    <div class="text-on-surface-variant text-sm tracking-[.35em] uppercase mt-3">A Conqueror — Web Programming Final Project</div>
+    <div class="text-on-surface-variant text-sm tracking-[.35em] uppercase mt-3">Web Programming Final Project</div>
   </div>
 
-  <div class="glass bronze-frame rounded-lg p-8 w-full max-w-md flex flex-col gap-5 relative corner-tl corner-tr">
-    <div>
-      <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-widest mb-2">Player Name</label>
-      <input id="input-username" type="text" maxlength="20" placeholder="Enter your name..."
-        class="w-full bg-surface-container-lowest border border-outline rounded px-4 py-3 text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all" />
-    </div>
+  <div id="home-layout">
+    
+    <div id="home-main-card" class="glass bronze-frame rounded-lg p-8 w-full max-w-md mx-auto flex flex-col gap-5 relative corner-tl corner-tr">
+      <div>
+        <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-widest mb-2">Player Name</label>
+        <input id="input-username" type="text" maxlength="20" placeholder="Enter your name..."
+          class="w-full bg-surface-container-lowest border border-outline rounded px-4 py-3 text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all" />
+      </div>
 
-    <button onclick="createLobby()"
-      class="w-full py-3.5 rounded font-display text-lg tracking-widest bg-primary text-on-primary font-bold hover:brightness-110 active:scale-95 transition-all glow-gold uppercase">
-      ⚗ Create New Lobby
-    </button>
-
-    <div class="flex items-center gap-3">
-      <div class="flex-1 h-px bg-outline-variant"></div>
-      <span class="text-on-surface-variant text-xs tracking-widest">or</span>
-      <div class="flex-1 h-px bg-outline-variant"></div>
-    </div>
-
-    <div class="flex gap-2">
-      <input id="input-lobby-id" type="text" placeholder="Enter Lobby ID..."
-        class="flex-1 bg-surface-container-lowest border border-outline rounded px-4 py-3 text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all text-sm" />
-      <button onclick="joinLobbyById()"
-        class="px-5 py-3 rounded font-display text-sm tracking-widest bg-secondary-container text-secondary font-bold hover:brightness-110 active:scale-95 transition-all border border-secondary/40">
-        Join
+      <button onclick="createLobby()"
+        class="w-full py-3.5 rounded font-display text-lg tracking-widest bg-primary text-on-primary font-bold hover:brightness-110 active:scale-95 transition-all glow-gold uppercase">
+        ⚗ Create New Lobby
       </button>
 
       <div class="flex items-center gap-3">
         <div class="flex-1 h-px bg-outline-variant"></div>
-        <span class="text-on-surface-variant text-xs tracking-widest">atau</span>
+        <span class="text-on-surface-variant text-xs tracking-widest">or</span>
         <div class="flex-1 h-px bg-outline-variant"></div>
       </div>
 
       <div class="flex gap-2">
-        <input id="input-lobby-id" type="text" placeholder="Masukkan Lobby ID..."
+        <input id="input-lobby-id" type="text" placeholder="Enter Lobby ID..."
           class="flex-1 bg-surface-container-lowest border border-outline rounded-lg px-4 py-3 text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all text-sm" />
         <button onclick="joinLobbyById()"
           class="px-5 py-3 rounded-lg font-display text-sm tracking-widest bg-secondary-container text-secondary font-bold hover:brightness-110 active:scale-95 transition-all border border-secondary/40">
@@ -689,137 +508,63 @@
 
       <button onclick="loadLobbies()"
         class="w-full py-2.5 rounded-lg border border-outline text-on-surface-variant text-xs hover:border-primary hover:text-primary transition-all tracking-widest uppercase">
-        🔍 Lihat Lobby Tersedia
+        🔍 Browse Available Lobbies
       </button>
       <div id="lobby-list" class="flex flex-col gap-2 max-h-52 overflow-y-auto"></div>
     </div>
 
-    <button onclick="loadLobbies()"
-      class="w-full py-2.5 rounded border border-outline text-on-surface-variant text-xs hover:border-primary hover:text-primary transition-all tracking-widest uppercase">
-      🔍 Browse Available Lobbies
-    </button>
-    <div id="lobby-list" class="flex flex-col gap-2 max-h-52 overflow-y-auto"></div>
-  </div>
-
-      <!-- Elements showcase -->
+    <div id="home-right-col" class="w-full max-w-md mx-auto">
+      <div id="home-error" class="text-error text-sm hidden w-full text-center mb-2"></div>
+      
       <div class="glass rounded-xl p-4 sm:p-5 bronze-frame w-full">
-        <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-3 font-semibold text-center">7 Elemen Alkimia</div>
+        <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-3 font-semibold text-center">7 Alchemy Elements</div>
         <div id="elements-showcase-grid">
-          <div class="flex flex-col items-center gap-1">
-            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:0s">🪨</div>
-            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Rock</div>
-          </div>
-          <div class="flex flex-col items-center gap-1">
-            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:.15s">🔥</div>
-            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Fire</div>
-          </div>
-          <div class="flex flex-col items-center gap-1">
-            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:.3s">✂️</div>
-            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Scissors</div>
-          </div>
-          <div class="flex flex-col items-center gap-1">
-            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:.45s">🧽</div>
-            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Sponge</div>
-          </div>
-          <div class="flex flex-col items-center gap-1">
-            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:.6s">📄</div>
-            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Paper</div>
-          </div>
-          <div class="flex flex-col items-center gap-1">
-            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:.75s">💨</div>
-            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Air</div>
-          </div>
-          <div class="flex flex-col items-center gap-1">
-            <div class="text-xl sm:text-2xl animate-float" style="animation-delay:.9s">💧</div>
-            <div class="text-[9px] sm:text-[10px] text-on-surface-variant">Water</div>
-          </div>
+          <div class="flex flex-col items-center gap-1"><div class="text-xl sm:text-2xl animate-float" style="animation-delay:0s">🪨</div><div class="text-[9px] sm:text-[10px] text-on-surface-variant">Rock</div></div>
+          <div class="flex flex-col items-center gap-1"><div class="text-xl sm:text-2xl animate-float" style="animation-delay:.15s">🔥</div><div class="text-[9px] sm:text-[10px] text-on-surface-variant">Fire</div></div>
+          <div class="flex flex-col items-center gap-1"><div class="text-xl sm:text-2xl animate-float" style="animation-delay:.3s">✂️</div><div class="text-[9px] sm:text-[10px] text-on-surface-variant">Scissors</div></div>
+          <div class="flex flex-col items-center gap-1"><div class="text-xl sm:text-2xl animate-float" style="animation-delay:.45s">🧽</div><div class="text-[9px] sm:text-[10px] text-on-surface-variant">Sponge</div></div>
+          <div class="flex flex-col items-center gap-1"><div class="text-xl sm:text-2xl animate-float" style="animation-delay:.6s">📄</div><div class="text-[9px] sm:text-[10px] text-on-surface-variant">Paper</div></div>
+          <div class="flex flex-col items-center gap-1"><div class="text-xl sm:text-2xl animate-float" style="animation-delay:.75s">💨</div><div class="text-[9px] sm:text-[10px] text-on-surface-variant">Air</div></div>
+          <div class="flex flex-col items-center gap-1"><div class="text-xl sm:text-2xl animate-float" style="animation-delay:.9s">💧</div><div class="text-[9px] sm:text-[10px] text-on-surface-variant">Water</div></div>
         </div>
       </div>
-
-  <div class="glass rounded-lg p-5 w-full max-w-md bronze-frame">
-    <div class="text-xs text-on-surface-variant uppercase tracking-widest mb-3 font-semibold text-center">7 Alchemy Elements</div>
-    <div class="grid grid-cols-7 gap-1.5 text-center">
-      <div class="text-2xl">🪨</div><div class="text-2xl">🔥</div><div class="text-2xl">✂️</div>
-      <div class="text-2xl">🧽</div><div class="text-2xl">📄</div><div class="text-2xl">💨</div><div class="text-2xl">💧</div>
-      <div class="text-xs text-on-surface-variant">Rock</div><div class="text-xs text-on-surface-variant">Fire</div>
-      <div class="text-xs text-on-surface-variant">Scissors</div><div class="text-xs text-on-surface-variant">Sponge</div>
-      <div class="text-xs text-on-surface-variant">Paper</div><div class="text-xs text-on-surface-variant">Air</div>
-      <div class="text-xs text-on-surface-variant">Water</div>
-    </div>
-  </div>
-
-  <section class="w-full max-w-4xl p-6 glass bronze-frame rounded-lg">
-    <h2 class="text-2xl md:text-3xl font-display font-bold text-primary mb-6 text-center tracking-wide">📖 Rules of Conquest</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-outline transition-colors">
-        <div class="text-xl mb-1 font-bold text-on-surface">🪨 Rock</div>
-        <div class="text-sm text-on-surface-variant">beats <span class="text-error">Fire</span>, <span class="text-on-surface">Scissors</span>, <span class="text-primary">Sponge</span></div>
-      </div>
-      <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-primary/50 transition-colors">
-        <div class="text-xl mb-1 font-bold text-on-surface">🔥 Fire</div>
-        <div class="text-sm text-on-surface-variant">beats <span class="text-on-surface">Scissors</span>, <span class="text-primary">Sponge</span>, <span class="text-secondary">Paper</span></div>
-      </div>
-      <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-outline transition-colors">
-        <div class="text-xl mb-1 font-bold text-on-surface">✂️ Scissors</div>
-        <div class="text-sm text-on-surface-variant">beats <span class="text-primary">Sponge</span>, <span class="text-secondary">Paper</span>, <span class="text-tertiary">Air</span></div>
-      </div>
-      <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-primary/50 transition-colors">
-        <div class="text-xl mb-1 font-bold text-on-surface">🧽 Sponge</div>
-        <div class="text-sm text-on-surface-variant">beats <span class="text-secondary">Paper</span>, <span class="text-tertiary">Air</span>, <span class="text-secondary-fixed-dim">Water</span></div>
-      </div>
-      <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-secondary/50 transition-colors">
-        <div class="text-xl mb-1 font-bold text-on-surface">📄 Paper</div>
-        <div class="text-sm text-on-surface-variant">beats <span class="text-tertiary">Air</span>, <span class="text-secondary-fixed-dim">Water</span>, <span class="text-on-surface-variant">Rock</span></div>
-      </div>
-      <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-tertiary/50 transition-colors">
-        <div class="text-xl mb-1 font-bold text-on-surface">💨 Air</div>
-        <div class="text-sm text-on-surface-variant">beats <span class="text-secondary-fixed-dim">Water</span>, <span class="text-on-surface-variant">Rock</span>, <span class="text-error">Fire</span></div>
-      </div>
-      <div class="bg-surface-container/80 p-4 rounded border border-outline-variant hover:border-secondary-fixed-dim/50 transition-colors md:col-span-2 lg:col-span-1">
-        <div class="text-xl mb-1 font-bold text-on-surface">💧 Water</div>
-        <div class="text-sm text-on-surface-variant">beats <span class="text-on-surface-variant">Rock</span>, <span class="text-error">Fire</span>, <span class="text-on-surface">Scissors</span></div>
-      </div>
     </div>
 
-    <div id="home-error" class="text-error text-sm hidden w-full max-w-md text-center"></div>
-
-    <!-- Rules block — full width -->
-    <section id="home-rules-block" class="w-full max-w-5xl p-4 sm:p-6 glass bronze-frame rounded-xl">
-      <h2 class="text-xl sm:text-2xl xl:text-3xl font-display font-bold text-primary mb-4 sm:mb-6 text-center tracking-wide">📖 Aturan Penaklukan</h2>
+    <section id="home-rules-block" class="w-full mx-auto max-w-5xl p-4 sm:p-6 glass bronze-frame rounded-xl">
+      <h2 class="text-xl sm:text-2xl xl:text-3xl font-display font-bold text-primary mb-4 sm:mb-6 text-center tracking-wide">📖 Rules of Conquest</h2>
       <div id="rules-grid">
         <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-outline transition-colors">
-          <div class="text-lg mb-1 font-bold text-on-surface">🪨 Batu</div>
-          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-error font-medium">Api</span>, <span class="text-on-surface font-medium">Gunting</span>, <span class="text-primary font-medium">Spons</span></div>
+          <div class="text-lg mb-1 font-bold text-on-surface">🪨 Rock</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">beats <span class="text-error font-medium">Fire</span>, <span class="text-on-surface font-medium">Scissors</span>, <span class="text-primary font-medium">Sponge</span></div>
         </div>
         <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-primary/50 transition-colors">
-          <div class="text-lg mb-1 font-bold text-on-surface">🔥 Api</div>
-          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-on-surface font-medium">Gunting</span>, <span class="text-primary font-medium">Spons</span>, <span class="text-secondary font-medium">Kertas</span></div>
+          <div class="text-lg mb-1 font-bold text-on-surface">🔥 Fire</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">beats <span class="text-on-surface font-medium">Scissors</span>, <span class="text-primary font-medium">Sponge</span>, <span class="text-secondary font-medium">Paper</span></div>
         </div>
         <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-outline transition-colors">
-          <div class="text-lg mb-1 font-bold text-on-surface">✂️ Gunting</div>
-          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-primary font-medium">Spons</span>, <span class="text-secondary font-medium">Kertas</span>, <span class="text-tertiary font-medium">Udara</span></div>
+          <div class="text-lg mb-1 font-bold text-on-surface">✂️ Scissors</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">beats <span class="text-primary font-medium">Sponge</span>, <span class="text-secondary font-medium">Paper</span>, <span class="text-tertiary font-medium">Air</span></div>
         </div>
         <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-primary/50 transition-colors">
-          <div class="text-lg mb-1 font-bold text-on-surface">🧽 Spons</div>
-          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-secondary font-medium">Kertas</span>, <span class="text-tertiary font-medium">Udara</span>, <span class="text-secondary-fixed-dim font-medium">Air</span></div>
+          <div class="text-lg mb-1 font-bold text-on-surface">🧽 Sponge</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">beats <span class="text-secondary font-medium">Paper</span>, <span class="text-tertiary font-medium">Air</span>, <span class="text-secondary-fixed-dim font-medium">Water</span></div>
         </div>
         <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-secondary/50 transition-colors">
-          <div class="text-lg mb-1 font-bold text-on-surface">📄 Kertas</div>
-          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-tertiary font-medium">Udara</span>, <span class="text-secondary-fixed-dim font-medium">Air</span>, <span class="text-on-surface-variant font-medium">Batu</span></div>
+          <div class="text-lg mb-1 font-bold text-on-surface">📄 Paper</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">beats <span class="text-tertiary font-medium">Air</span>, <span class="text-secondary-fixed-dim font-medium">Water</span>, <span class="text-on-surface-variant font-medium">Rock</span></div>
         </div>
         <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-tertiary/50 transition-colors">
-          <div class="text-lg mb-1 font-bold text-on-surface">💨 Udara</div>
-          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-secondary-fixed-dim font-medium">Air</span>, <span class="text-on-surface-variant font-medium">Batu</span>, <span class="text-error font-medium">Api</span></div>
+          <div class="text-lg mb-1 font-bold text-on-surface">💨 Air</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">beats <span class="text-secondary-fixed-dim font-medium">Water</span>, <span class="text-on-surface-variant font-medium">Rock</span>, <span class="text-error font-medium">Fire</span></div>
         </div>
-        <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-secondary-fixed-dim/50 transition-colors">
-          <div class="text-lg mb-1 font-bold text-on-surface">💧 Air</div>
-          <div class="text-xs text-on-surface-variant leading-relaxed">mengalahkan <span class="text-on-surface-variant font-medium">Batu</span>, <span class="text-error font-medium">Api</span>, <span class="text-on-surface font-medium">Gunting</span></div>
+        <div class="bg-surface-container/80 p-3.5 rounded-lg border border-outline-variant hover:border-secondary-fixed-dim/50 transition-colors md:col-span-2 lg:col-span-1">
+          <div class="text-lg mb-1 font-bold text-on-surface">💧 Water</div>
+          <div class="text-xs text-on-surface-variant leading-relaxed">beats <span class="text-on-surface-variant font-medium">Rock</span>, <span class="text-error font-medium">Fire</span>, <span class="text-on-surface font-medium">Scissors</span></div>
         </div>
       </div>
     </section>
 
-  </div><!-- end home-layout -->
-</div>
+  </div></div>
 
 <div id="screen-lobby" class="screen flex-col min-h-screen">
 
@@ -848,7 +593,6 @@
           <span class="text-xs text-on-surface-variant" id="lobby-player-count">0 Players</span>
         </div>
 
-        <!-- Lobby ID display -->
         <div class="flex items-center gap-2">
           <div class="flex items-center gap-1.5 bg-surface-container-lowest px-3 py-1.5 rounded-lg border border-outline">
             <span class="text-xs text-on-surface-variant">ID:</span>
@@ -856,7 +600,7 @@
           </div>
           <button id="btn-copy-id" onclick="copyLobbyId()"
             class="tooltip flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-outline text-on-surface-variant text-xs hover:border-primary hover:text-primary transition-all active:scale-95"
-            data-tip="Salin ID ke clipboard">
+            data-tip="Copy ID to clipboard">
             <span id="copy-icon">📋</span>
             <span id="copy-label" class="hidden xl:inline">Copy</span>
           </button>
@@ -868,7 +612,6 @@
         </button>
       </div>
     </div>
-
   </header>
 
   <div class="flex flex-1 gap-0 overflow-hidden" style="min-height: calc(100vh - 64px);">
@@ -1003,7 +746,6 @@
     </main>
 
     <aside class="w-80 flex-shrink-0 flex flex-col bg-surface-container-low border-l border-outline-variant">
-
       <div class="flex items-center justify-between px-4 py-3 border-b border-outline-variant bg-surface-container">
         <div class="font-display text-base text-primary uppercase tracking-widest">Lobby Scrolls</div>
         <div class="flex items-center gap-1.5">
@@ -1025,29 +767,9 @@
           </button>
         </div>
       </div>
-
     </aside>
 
   </div>
-
-  <nav class="bg-surface-container-lowest/90 backdrop-blur-md border-t border-outline-variant fixed bottom-0 w-full z-50 lg:hidden flex justify-around items-center px-4 py-3">
-    <a class="flex flex-col items-center text-primary" href="#">
-      <span class="text-xl">⚔</span>
-      <span class="text-xs mt-0.5 tracking-widest uppercase">Battle</span>
-    </a>
-    <a class="flex flex-col items-center text-on-surface-variant hover:text-primary transition-colors" href="#">
-      <span class="text-xl">📖</span>
-      <span class="text-xs mt-0.5 tracking-widest uppercase">Library</span>
-    </a>
-    <a class="flex flex-col items-center text-on-surface-variant hover:text-primary transition-colors" href="#">
-      <span class="text-xl">💬</span>
-      <span class="text-xs mt-0.5 tracking-widest uppercase">Social</span>
-    </a>
-    <a class="flex flex-col items-center text-on-surface-variant hover:text-primary transition-colors" href="#">
-      <span class="text-xl">🔒</span>
-      <span class="text-xs mt-0.5 tracking-widest uppercase">Vault</span>
-    </a>
-  </nav>
 </div>
 
 <div id="toast" class="fixed top-5 right-5 z-50 hidden pointer-events-none">
@@ -1421,6 +1143,7 @@
       }
     },
   ];
+  const ELEM_MAP = Object.fromEntries(ELEM_DATA.map(e => [e.name, e]));
 
   function closeAllDrawers() {
     document.getElementById('drawer-left')?.classList.remove('open');
@@ -1439,18 +1162,6 @@
   });
   const chatBox = document.getElementById('chat-box');
   if (chatBox) _chatObserver.observe(chatBox, { childList: true });
-
-  /* ─── Game Info Modal ────────────────────────────── */
-  // const ELEM_DATA = [
-  //   { name:"Rock",    icon:"🪨", color:"#94a3b8", desc:"Batu purba yang kokoh — simbol ketahanan dan kekuatan mentah.", beats:["Fire","Scissors","Sponge"], loses:["Paper","Air","Water"], reasons:{"Fire":"Batu memadamkan Api dengan menghancurkan bara.","Scissors":"Batu menghancurkan Gunting dengan kekerasannya.","Sponge":"Batu meremukkan Spons secara fisik."} },
-  //   { name:"Fire",    icon:"🔥", color:"#f97316", desc:"Api alkimia yang membakar segala yang lunak dan tajam.", beats:["Scissors","Sponge","Paper"], loses:["Rock","Air","Water"], reasons:{"Scissors":"Api melelehkan logam Gunting.","Sponge":"Api membakar Spons habis-habisan.","Paper":"Api menghanguskan Kertas seketika."} },
-  //   { name:"Scissors",icon:"✂️", color:"#e2e8f0", desc:"Gunting tajam yang memotong segala yang lembut dan ringan.", beats:["Sponge","Paper","Air"], loses:["Rock","Fire","Water"], reasons:{"Sponge":"Gunting memotong Spons menjadi potongan kecil.","Paper":"Gunting memotong Kertas dengan mudah.","Air":"Gunting memotong arus Udara, membelah alirannya."} },
-  //   { name:"Sponge",  icon:"🧽", color:"#f2ca50", desc:"Spons menyerap semua — hanya dilemahkan oleh yang lebih keras.", beats:["Paper","Air","Water"], loses:["Rock","Fire","Scissors"], reasons:{"Paper":"Spons menyerap tinta dan merusak Kertas.","Air":"Spons menangkap Udara dan memadatkannya.","Water":"Spons menyerap Air sepenuhnya."} },
-  //   { name:"Paper",   icon:"📄", color:"#38bdf8", desc:"Kertas — lambang pengetahuan yang mengikat bahkan batu sekalipun.", beats:["Air","Water","Rock"], loses:["Fire","Scissors","Sponge"], reasons:{"Air":"Kertas membungkus dan mengikat Udara.","Water":"Kertas menyerap Air dan mendistorsi alirannya.","Rock":"Kertas membungkus Batu — simbol penguasaan."} },
-  //   { name:"Air",     icon:"💨", color:"#a78bfa", desc:"Udara tak terlihat namun melingkupi segalanya.", beats:["Water","Rock","Fire"], loses:["Scissors","Sponge","Paper"], reasons:{"Water":"Udara menguapkan Air menjadi uap.","Rock":"Udara mengikis Batu perlahan namun pasti.","Fire":"Udara memadamkan Api (tanpa bahan bakar)."} },
-  //   { name:"Water",   icon:"💧", color:"#06b6d4", desc:"Air mengalir menembus segala rintangan — pembasmi api dan logam.", beats:["Rock","Fire","Scissors"], loses:["Sponge","Paper","Air"], reasons:{"Rock":"Air mengikis dan melubangi Batu seiring waktu.","Fire":"Air memadamkan Api secara langsung.","Scissors":"Air berkarat dan melemahkan logam Gunting."} },
-  // ];
-  const ELEM_MAP = Object.fromEntries(ELEM_DATA.map(e => [e.name, e]));
 
   function openGameInfo() {
     document.getElementById('info-modal').classList.remove('hidden');
@@ -1497,6 +1208,11 @@
     const card = document.getElementById('elem-detail-card');
     card.style.display = 'block';
     card.style.borderColor = e.color + '55';
+  }
+
+  // Dummy fallback untuk mobile nav
+  function toggleDrawer(id) {
+     console.log("Drawer toggled:", id);
   }
 
   window.openGameInfo = openGameInfo;
