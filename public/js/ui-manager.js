@@ -1,15 +1,9 @@
 export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
-  // ─────────────────────────────────────────────────────────────
-  // SCREENS
-  // ─────────────────────────────────────────────────────────────
   function showScreen(id) {
     document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
     document.getElementById(`screen-${id}`)?.classList.add("active");
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // TOAST & ERROR
-  // ─────────────────────────────────────────────────────────────
   let toastTimer;
   function showToast(msg, ms = 3000) {
     const t = document.getElementById("toast");
@@ -30,9 +24,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     }, 3500);
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // COPY LOBBY ID
-  // ─────────────────────────────────────────────────────────────
   function copyLobbyId() {
     if (!state.matchId) return;
 
@@ -84,21 +75,17 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
 
       overlay.classList.remove("hidden");
       
-      // Sembunyikan setelah 3.5 detik
       setTimeout(() => {
           overlay.classList.add("hidden");
       }, 3500);
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // KICK MODAL
-  // ─────────────────────────────────────────────────────────────
   let onConfirmKickCallback = null;
 
   function showKickModal(username, onConfirm) {
     document.getElementById("kick-modal-username").textContent = username;
     document.getElementById("kick-modal").classList.remove("hidden");
-    onConfirmKickCallback = onConfirm; // Simpan aksi yang mau dijalankan
+    onConfirmKickCallback = onConfirm; 
   }
 
   function closeKickModal() {
@@ -106,16 +93,12 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     onConfirmKickCallback = null;
   }
 
-  // Event listener untuk tombol Batal dan Konfirmasi di modal
   document.getElementById("btn-cancel-kick")?.addEventListener("click", closeKickModal);
   document.getElementById("btn-confirm-kick")?.addEventListener("click", () => {
-    if (onConfirmKickCallback) onConfirmKickCallback(); // Jalankan emit socket
-    closeKickModal(); // Tutup modal setelah klik
+    if (onConfirmKickCallback) onConfirmKickCallback(); 
+    closeKickModal(); 
   });
 
-  // ─────────────────────────────────────────────────────────────
-  // LOBBY UI
-  // ─────────────────────────────────────────────────────────────
   function renderLobbyState(match) {
     const humanCount = match.participants.filter((p) => !p.is_bot).length;
     const botCount = match.participants.filter((p) => p.is_bot).length;
@@ -145,21 +128,17 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
       if (modeSelect) {
           modeSelect.value = match.mode;
           
-          // Hitung total pemain (bisa manusia + bot, atau manusia saja tergantung kebutuhan)
           const totalPlayers = match.participants.length; 
 
           if (totalPlayers > 2) {
-              // Kunci dropdown jika pemain > 2
               modeSelect.disabled = true;
               modeSelect.classList.add("opacity-50", "cursor-not-allowed");
               
-              // Ubah teks badge untuk memberi tahu alasan kenapa dikunci
               if (modeBadge) {
                   modeBadge.textContent = "🔒 Terkunci! Sisakan 2 pemain untuk ganti mode (Keluar atau Kick).";
-                  modeBadge.classList.add("text-red-400"); // Beri warna merah/peringatan
+                  modeBadge.classList.add("text-red-400"); 
               }
           } else {
-              // Buka kunci jika pemain <= 2
               modeSelect.disabled = false;
               modeSelect.classList.remove("opacity-50", "cursor-not-allowed");
               
@@ -176,11 +155,9 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     if (isCupMode && isGameRunning) {
         renderCupPlayers(match);
     } else {
-        // Jika mode normal atau sedang di lobby, render list pemain biasa
         renderIngamePlayers(match);
     }
 
-    // Leader panel tetap hanya muncul di waiting
     document.getElementById("leader-panel").classList.toggle("hidden", !(state.isLeader && match.status === "waiting"));
 
     renderPlayerList(match);
@@ -196,13 +173,11 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
           ? `<div class="text-[9px] text-neon-gold font-bold uppercase tracking-widest">${p.custom_title}</div>`
           : "";
 
-        // --- TAMBAHAN KODE TOMBOL KICK ---
         const showKickBtn = state.isLeader && !isMe;
-        const safeName = p.username.replace(/'/g, "\\'"); // Berjaga-jaga kalau ada user pakai tanda kutip di namanya
+        const safeName = p.username.replace(/'/g, "\\'"); 
         const kickBtnHtml = showKickBtn 
           ? `<button onclick="window.requestKickPlayer('${p.user_id}', '${safeName}')" class="ml-auto bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/50 rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide transition-colors">Kick</button>`
           : "";
-        // ---------------------------------
 
         return `
       <div class="flex items-center gap-2.5 rounded-xl px-3 py-2
@@ -255,7 +230,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
       .join("");
   }
 
-  // Lacak match yang sedang ditampilkan di popup
   let _lastCupMatchKey = null;
   let _cupPopupTimer = null;
 
@@ -264,7 +238,7 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
       if (!bracket) return;
 
       const matchKey = `${bracket.active_p1}-${bracket.active_p2}`;
-      if (_lastCupMatchKey === matchKey) return; // Match sama, jangan tampil lagi
+      if (_lastCupMatchKey === matchKey) return; 
       _lastCupMatchKey = matchKey;
 
       const p1 = match.participants.find(x => x.user_id === bracket.active_p1);
@@ -298,7 +272,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
         </div>
       `;
 
-      // Reset countdown bar
       bar.style.transition = "none";
       bar.style.width = "100%";
       popup.classList.remove("hidden");
@@ -318,14 +291,11 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
           renderIngamePlayers(match); return;
       }
 
-      // Tampilkan bagan di sidebar
       const bracketContainer = document.getElementById("cup-bracket-container");
       if (bracketContainer) bracketContainer.classList.remove("hidden");
 
-      // Tampilkan popup jika ada match baru
       showCupMatchPopup(match);
 
-      // Render semua pertandingan di ronde ini ke dalam sidebar
       const matchesInRound = bracket.schedule.filter(m => m.r === bracket.round);
       document.getElementById("cup-bracket-list").innerHTML = matchesInRound.map(m => {
           const p1 = match.participants.find(x => x.user_id === m.p1);
@@ -364,7 +334,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
           </div>`;
       }).join("");
 
-      // Render pemain aktif di area tengah
       const activePlayers = [
         match.participants.find(p => p.user_id === bracket.active_p1),
         match.participants.find(p => p.user_id === bracket.active_p2)
@@ -388,9 +357,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
   }
 
 
-  // ─────────────────────────────────────────────────────────────
-  // ELEMENT BUTTONS
-  // ─────────────────────────────────────────────────────────────
   function buildElementGrid() {
     document.getElementById("elements-grid").innerHTML = ELEMENTS
       .map(
@@ -432,9 +398,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     });
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // TIMER
-  // ─────────────────────────────────────────────────────────────
   const CIRCUMFERENCE = 2 * Math.PI * 36;
 
   function startTimer(totalSec) {
@@ -462,9 +425,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     document.getElementById("timer-display").textContent = "—";
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // PHASE UI
-  // ─────────────────────────────────────────────────────────────
   function setPhaseUI(phase, labelOverride) {
     state.currentPhase = phase;
     const map = {
@@ -509,9 +469,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     document.getElementById("result-banner").classList.add("hidden");
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // GAME OVER
-  // ─────────────────────────────────────────────────────────────
   function showGameOver(data) {
     document.getElementById("game-board").classList.add("hidden");
     document.getElementById("waiting-screen").classList.add("hidden");
@@ -562,10 +519,10 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
 
     const btnRestart = document.getElementById("btn-restart-game");
     if (btnRestart) {
-        console.log("Apakah saya leader?", state.isLeader); // Cek di Inspect Element (F12)
+        console.log("Apakah saya leader?", state.isLeader); 
         if (state.isLeader) {
             btnRestart.classList.remove("hidden");
-            btnRestart.style.display = "block"; // Paksa muncul!
+            btnRestart.style.display = "block"; 
         } else {
             btnRestart.classList.add("hidden");
             btnRestart.style.display = "none";
@@ -579,9 +536,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // PARTICLES
-  // ─────────────────────────────────────────────────────────────
   function spawnParticles() {
     const c = document.getElementById("particles-container");
     const colors = ["#00f5ff", "#ff0080", "#ffd700", "#39ff14", "#bf00ff"];
@@ -594,9 +548,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // CHAT
-  // ─────────────────────────────────────────────────────────────
   function appendChat(data) {
     const box = document.getElementById("chat-box");
     const isMe = data.user_id === state.userId;
@@ -639,15 +590,13 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // SHARED UI SHORTCUTS
-  // ─────────────────────────────────────────────────────────────
   function setGameStartedUI({ mode }) {
     showToast(`🚀 Game mulai! Mode: ${MODE_LABELS[mode] || mode}`, 4000);
     document.getElementById("waiting-screen").classList.add("hidden");
     document.getElementById("game-over-screen").classList.add("hidden");
     document.getElementById("game-board").classList.remove("hidden");
     document.getElementById("leader-panel").classList.add("hidden");
+    hideResultBanner();
     appendSystem("─── Permainan dimulai! ───");
   }
 
@@ -657,7 +606,6 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
     document.getElementById("waiting-screen").classList.remove("hidden");
     document.getElementById("game-over-screen").classList.add("hidden");
     document.getElementById("spectator-notice").classList.add("hidden");
-    // Reset popup state
     _lastCupMatchKey = null;
     clearTimeout(_cupPopupTimer);
     document.getElementById("cup-match-popup")?.classList.add("hidden");
@@ -668,10 +616,10 @@ export function createUIManager({ state, ELEMENTS, MODE_LABELS, MODE_INFO }) {
      document.getElementById("game-over-screen").classList.add("hidden");
      document.getElementById("waiting-screen").classList.remove("hidden");
      document.getElementById("chat-box").innerHTML = "";
-     // Reset popup state
      _lastCupMatchKey = null;
      clearTimeout(_cupPopupTimer);
      document.getElementById("cup-match-popup")?.classList.add("hidden");
+     hideResultBanner();
      appendSystem("♻️ Lobi di-reset oleh Leader. Siap main lagi!");
   }
 
