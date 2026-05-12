@@ -123,6 +123,55 @@
       }
     }
 
+    /* ── Drawer styles ── */
+    #drawer-backdrop.open {
+      display: block;
+    }
+
+    #drawer-left.open,
+    #drawer-right.open {
+      display: flex !important;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      z-index: 40;
+      animation: slideInLeft 0.3s ease-out forwards;
+      max-height: 100vh;
+      overflow-y: auto;
+    }
+
+    #drawer-left.open {
+      left: 0;
+      width: 280px;
+      animation: slideInLeft 0.3s ease-out forwards;
+    }
+
+    #drawer-right.open {
+      right: 0;
+      width: 280px;
+      animation: slideInRight 0.3s ease-out forwards;
+    }
+
+    @media (min-width: 1024px) {
+      #drawer-backdrop {
+        display: none !important;
+      }
+      #drawer-left,
+      #drawer-right {
+        position: static !important;
+        animation: none !important;
+      }
+      #drawer-left.open,
+      #drawer-right.open {
+        animation: none !important;
+      }
+    }
+
+    /* Safe area inset for mobile bottom nav */
+    #mobile-bottom-nav {
+      padding-bottom: max(0, env(safe-area-inset-bottom));
+    }
+
     body {
       font-family: "Inter", sans-serif;
       background-color: #121411;
@@ -292,9 +341,17 @@
       overflow: hidden;
       min-height: calc(100dvh - var(--header-height));
       align-items: stretch;
+      padding-bottom: 0;
     }
 
-    #drawer-left.sidebar-left {
+    @media (max-width: 1023px) {
+      #lobby-columns {
+        min-height: calc(100dvh - var(--header-height) - 80px);
+        padding-bottom: 80px;
+      }
+    }
+
+    .sidebar-left {
       width: var(--sidebar-left-width);
       flex-shrink: 0;
       display: flex;
@@ -306,7 +363,7 @@
       overflow-y: auto;
     }
 
-    #drawer-right.sidebar-right {
+    .sidebar-right {
       width: var(--sidebar-right-width);
       flex-shrink: 0;
       display: flex;
@@ -568,32 +625,32 @@
 
 <div id="screen-lobby" class="screen flex-col min-h-screen">
 
-  <header class="bg-surface-container border-b border-outline-variant z-40 sticky top-0">
-    <div class="flex justify-between items-center w-full px-6 md:px-10 h-16">
-      <div class="flex items-center gap-4">
-        <span class="font-display text-xl text-white uppercase tracking-widest font-bold">A Conqueror of the</span>
-        <span class="font-display text-xl text-primary uppercase tracking-widest font-bold"> Seven Hand Game</span>
+  <header class="bg-surface-container border-b border-outline-variant z-40 sticky top-0 h-auto min-h-16 lg:min-h-auto">
+    <div class="flex justify-between items-start lg:items-center w-full px-4 md:px-8 lg:px-10 py-3 lg:py-0 gap-3 flex-wrap lg:flex-nowrap">
+      <div class="flex items-center gap-2 lg:gap-4 flex-wrap">
+        <span class="font-display text-sm md:text-base lg:text-lg text-white uppercase tracking-widest font-bold leading-tight">A Conqueror of the</span>
+        <span class="font-display text-sm md:text-base lg:text-lg text-primary uppercase tracking-widest font-bold leading-tight">Seven Hand Game</span>
         <div id="top-mode-badge" class="px-2 py-0.5 rounded bg-surface-container-highest border border-outline text-xs text-on-surface-variant uppercase tracking-wider hidden"></div>
       </div>
 
-      <nav class="hidden md:flex gap-2 h-full items-center">
-        <button onclick="toggleMusic()" class="flex items-center gap-1.5 text-on-surface-variant hover:text-primary px-3 py-1.5 text-sm tracking-widest uppercase transition-colors border border-outline-variant rounded bg-surface-container-highest/30 active:scale-95">
+      <nav class="hidden md:flex gap-2 items-center">
+        <button onclick="toggleMusic()" class="flex items-center gap-1.5 text-on-surface-variant hover:text-primary px-3 py-1.5 text-xs lg:text-sm tracking-widest uppercase transition-colors border border-outline-variant rounded bg-surface-container-highest/30 active:scale-95">
           <span id="music-icon">🔇</span>
-          <span class="text-xs">Music</span>
+          <span class="hidden lg:inline">Music</span>
         </button>
 
-        <button onclick="openGameInfo()" class="flex items-center gap-1.5 text-on-surface-variant hover:text-primary px-4 py-2 text-sm tracking-widest uppercase transition-colors border-l border-outline-variant ml-1">
-          <span>📖</span> How to Play
+        <button onclick="openGameInfo()" class="flex items-center gap-1.5 text-on-surface-variant hover:text-primary px-3 py-1.5 text-xs lg:text-sm tracking-widest uppercase transition-colors border border-outline-variant rounded bg-surface-container-highest/30 active:scale-95">
+          <span>📖</span><span class="hidden sm:inline">How to Play</span>
         </button>
       </nav>
       
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 lg:gap-3 flex-wrap lg:flex-nowrap">
         <div class="flex items-center gap-1.5">
           <div class="w-2 h-2 rounded-full bg-tertiary live-dot"></div>
           <span class="text-xs text-on-surface-variant" id="lobby-player-count">0 Players</span>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="hidden md:flex items-center gap-2">
           <div class="flex items-center gap-1.5 bg-surface-container-lowest px-3 py-1.5 rounded-lg border border-outline">
             <span class="text-xs text-on-surface-variant">ID:</span>
             <span class="text-xs text-primary font-mono font-semibold tracking-wider" id="lobby-id-display"></span>
@@ -602,12 +659,12 @@
             class="tooltip flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-outline text-on-surface-variant text-xs hover:border-primary hover:text-primary transition-all active:scale-95"
             data-tip="Copy ID to clipboard">
             <span id="copy-icon">📋</span>
-            <span id="copy-label" class="hidden xl:inline">Copy</span>
+            <span id="copy-label" class="hidden lg:inline">Copy</span>
           </button>
         </div>
 
         <button onclick="leaveLobby()"
-          class="px-3 py-1.5 rounded border border-error/40 text-error text-xs hover:bg-error-container/30 transition-all ml-1">
+          class="px-3 py-1.5 rounded border border-error/40 text-error text-xs hover:bg-error-container/30 transition-all">
           Leave
         </button>
       </div>
@@ -616,7 +673,7 @@
 
   <div class="flex flex-1 gap-0 overflow-hidden" style="min-height: calc(100vh - 64px);">
 
-    <aside class="w-72 flex-shrink-0 flex flex-col gap-4 p-5 bg-surface-container-low border-r border-outline-variant overflow-y-auto">
+    <aside id="drawer-left" class="sidebar-left hidden lg:flex w-56 lg:w-60 xl:w-72 flex-shrink-0 flex flex-col gap-4 p-5 bg-surface-container-low border-r border-outline-variant overflow-y-auto">
 
       <div class="glass bronze-frame rounded-lg p-4 relative corner-tl">
         <div class="text-xs text-on-surface-variant uppercase tracking-widest font-semibold mb-3 flex items-center justify-between">
@@ -745,7 +802,7 @@
 
     </main>
 
-    <aside class="w-80 flex-shrink-0 flex flex-col bg-surface-container-low border-l border-outline-variant">
+    <aside id="drawer-right" class="sidebar-right hidden lg:flex w-64 lg:w-72 xl:w-80 flex-shrink-0 flex flex-col bg-surface-container-low border-l border-outline-variant">
       <div class="flex items-center justify-between px-4 py-3 border-b border-outline-variant bg-surface-container">
         <div class="font-display text-base text-primary uppercase tracking-widest">Lobby Scrolls</div>
         <div class="flex items-center gap-1.5">
@@ -770,7 +827,32 @@
     </aside>
 
   </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav id="mobile-bottom-nav" class="lg:hidden fixed bottom-0 left-0 right-0 z-30 flex gap-0 bg-surface-container border-t border-outline-variant safe-area-inset-bottom">
+    <button onclick="toggleDrawerLeft()" class="flex-1 flex flex-col items-center justify-center py-3 gap-1 text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors text-xs uppercase tracking-widest font-semibold">
+      <span class="text-lg">⚔</span>
+      <span>Participants</span>
+    </button>
+    <button onclick="toggleDrawerArena()" class="flex-1 flex flex-col items-center justify-center py-3 gap-1 text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors text-xs uppercase tracking-widest font-semibold">
+      <span class="text-lg">⚗</span>
+      <span>Arena</span>
+    </button>
+    <button onclick="openGameInfo()" class="flex-1 flex flex-col items-center justify-center py-3 gap-1 text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors text-xs uppercase tracking-widest font-semibold">
+      <span class="text-lg">📖</span>
+      <span>Guide</span>
+    </button>    
+    <button onclick="toggleDrawerRight()" class="flex-1 flex flex-col items-center justify-center py-3 gap-1 text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors text-xs uppercase tracking-widest font-semibold relative">
+      <span class="text-lg">💬</span>
+      <span>Chat</span>
+      <div id="chat-unread-dot" class="hidden absolute top-2 right-4 w-2 h-2 rounded-full bg-neon-cyan"></div>
+    </button>
+  </nav>
+
 </div>
+
+<!-- Drawer Backdrop -->
+<div id="drawer-backdrop" class="hidden lg:hidden fixed inset-0 z-20 bg-black/40 backdrop-blur-sm" onclick="closeAllDrawers()"></div>
 
 <div id="toast" class="fixed top-5 right-5 z-50 hidden pointer-events-none">
   <div class="glass-dark rounded px-5 py-3 text-sm border border-outline shadow-2xl animate-slide-up">
@@ -821,8 +903,6 @@
     </div>
   </div>
 </div>
-
-<script type="module" src="/js/main.js"></script>
 
 <div id="info-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/75 backdrop-blur-sm" onclick="if(event.target===this)closeGameInfo()">
   <div class="relative w-full max-w-3xl mx-4 max-h-[90vh] flex flex-col glass-dark rounded-lg border border-outline shadow-[0_0_40px_rgba(242,202,80,.15)] animate-pop-in overflow-hidden" style="background:linear-gradient(160deg,#1a1c19 0%,#121411 100%)">
@@ -1152,6 +1232,47 @@
     document.body.style.overflow = '';
   }
 
+  function toggleDrawerLeft() {
+    const drawer = document.getElementById('drawer-left');
+    const backdrop = document.getElementById('drawer-backdrop');
+    const isOpen = drawer?.classList.contains('open');
+    
+    if (isOpen) {
+      drawer.classList.remove('open');
+      backdrop.classList.remove('open');
+      document.body.style.overflow = '';
+    } else {
+      drawer?.classList.add('open');
+      backdrop?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function toggleDrawerRight() {
+    const drawer = document.getElementById('drawer-right');
+    const backdrop = document.getElementById('drawer-backdrop');
+    const isOpen = drawer?.classList.contains('open');
+    
+    if (isOpen) {
+      drawer.classList.remove('open');
+      backdrop.classList.remove('open');
+      document.body.style.overflow = '';
+    } else {
+      drawer?.classList.add('open');
+      backdrop?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      
+      // Hide unread dot when opening chat
+      const dot = document.getElementById('chat-unread-dot');
+      if (dot) dot.classList.add('hidden');
+    }
+  }
+
+  function toggleDrawerArena() {
+    // Close all drawers when clicking Arena button
+    closeAllDrawers();
+  }
+
   /* Unread dot observer */
   const _chatObserver = new MutationObserver(() => {
     const rightDrawer = document.getElementById('drawer-right');
@@ -1180,7 +1301,7 @@
   }
   function buildElemSelectorGrid() {
     const grid = document.getElementById('elem-selector-grid');
-    if (grid.innerHTML) return;
+    if (!grid || grid.children.length > 0) return;
     grid.innerHTML = ELEM_DATA.map(e => `
       <button class="elem-pill" onclick="showElemDetail('${e.name}')" id="pill-${e.name}">
         <span class="pill-icon">${e.icon}</span>
@@ -1229,5 +1350,7 @@
     if (window.innerWidth >= 1024) closeAllDrawers();
   });
 </script>
+
+<script type="module" src="/js/main.js"></script>
 </body>
 </html>
